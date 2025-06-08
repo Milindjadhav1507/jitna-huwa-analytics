@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -57,7 +57,7 @@ interface PivotConfig {
   templateUrl: './excel-preview.component.html',
   styleUrls: ['./excel-preview.component.scss']
 })
-export class ExcelPreviewComponent implements OnInit, AfterViewInit {
+export class ExcelPreviewComponent implements OnInit, AfterViewInit, OnDestroy {
   // Data from import component
   headers: string[] = [];
   allData: RowData[] = [];
@@ -168,6 +168,19 @@ export class ExcelPreviewComponent implements OnInit, AfterViewInit {
 
   constructor(private router: Router, private cdr: ChangeDetectorRef, private toastr: ToastrService) {}
 
+  // Keyboard shortcut handler for Create Chart (Ctrl+C)
+  handleShortcutKey = (event: KeyboardEvent) => {
+    // Ctrl+C (but not when in input/textarea)
+    if (event.ctrlKey && event.key.toLowerCase() === 'c') {
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as HTMLElement).isContentEditable)) {
+        return; // Let normal copy work in input fields
+      }
+      event.preventDefault();
+      this.openChartModal();
+    }
+  }
+
   ngOnInit() {
     this.loadData();
     this.updateSheetChartStatus();
@@ -182,6 +195,12 @@ export class ExcelPreviewComponent implements OnInit, AfterViewInit {
         this.chart?.resize();
       });
     }
+    // Add keyboard shortcut for Create Chart (Ctrl+C)
+    window.addEventListener('keydown', this.handleShortcutKey);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('keydown', this.handleShortcutKey);
   }
 
   private loadData() {
@@ -556,7 +575,7 @@ export class ExcelPreviewComponent implements OnInit, AfterViewInit {
   }
 
   // Chart Modal Methods
-  openChartModal() {
+  public openChartModal() {
     // Reset selections and validation state
     this.selectedXAxis = '';
     this.selectedYAxes = [];

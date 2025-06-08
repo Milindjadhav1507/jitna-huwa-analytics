@@ -512,6 +512,25 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
       const chartInstance = this.chartInstances.get(chart.id);
       let completeConfig = { ...(chart.chartConfig || {}) };
 
+      // Special handling for candlestick: always use original data
+      if ((completeConfig.type || chart.type) === 'candlestick') {
+        // Ensure we keep the original OHLCV data array
+        if (chart.chartConfig && Array.isArray(chart.chartConfig.data) && chart.chartConfig.data.length > 0) {
+          completeConfig.data = chart.chartConfig.data;
+        }
+        // Also ensure xAxis and yAxes are correct
+        completeConfig.xAxis = 'date';
+        completeConfig.yAxes = [
+          { name: 'open', color: (chart.chartConfig?.customColors?.open || '#3d3185') },
+          { name: 'high', color: (chart.chartConfig?.customColors?.high || '#3d3185') },
+          { name: 'low', color: (chart.chartConfig?.customColors?.low || '#3d3185') },
+          { name: 'close', color: (chart.chartConfig?.customColors?.close || '#3d3185') },
+          { name: 'volume', color: (chart.chartConfig?.customColors?.volume || '#3d3185') }
+        ];
+        completeConfig.headers = ['date', 'open', 'high', 'low', 'close', 'volume'];
+        return completeConfig;
+      }
+
       if (chartInstance && typeof chartInstance.getOption === 'function') {
         try {
           const option = chartInstance.getOption() as EChartsOption;
@@ -1426,8 +1445,6 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
       ]);
       // Convert date to timestamp for ECharts 'time' axis
       const ohlcDataWithTimestamps = ohlcData.map(item => [moment(item[0]).valueOf(), ...item.slice(1)]);
-      // Force green color in edit modal
-      const isEdit = this.isEditChartModalVisible === true;
       return {
         backgroundColor: '#fff',
         title: {
@@ -1541,12 +1558,7 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
             name: 'Candlestick',
             type: 'candlestick',
             data: ohlcDataWithTimestamps.map(item => [item[0], item[1], item[4], item[3], item[2]]), // [timestamp, open, close, low, high]
-            itemStyle: isEdit ? {
-              color: '#00da3c',      // Green for up
-              color0: '#00da3c',     // Green for down
-              borderColor: '#008F28',
-              borderColor0: '#008F28'
-            } : {
+            itemStyle: {
               color: '#FD1050',      // Red for up
               color0: '#0CF49B',     // Green for down
               borderColor: '#FD1050',
