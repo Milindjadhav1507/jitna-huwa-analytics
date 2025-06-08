@@ -868,7 +868,7 @@ export class ExcelPreviewComponent implements OnInit, AfterViewInit {
             {
               name: 'Candlestick',
               type: 'candlestick',
-              data: ohlcDataWithTimestamps,
+              data: ohlcDataWithTimestamps.map(item => [item[0], item[1], item[4], item[3], item[2]]),
               itemStyle: {
                 color: '#FD1050',      // Red for up
                 color0: '#0CF49B',     // Green for down

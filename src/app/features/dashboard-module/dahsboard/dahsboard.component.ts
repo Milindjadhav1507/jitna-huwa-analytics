@@ -1349,10 +1349,7 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
       if (Array.isArray(data) && data.length > 0 && data[0].name !== undefined && data[0].value !== undefined) {
         pieData = data.map((d: any) => ({
           name: d.name,
-          value: d.value,
-          itemStyle: {
-            color: (chartConfig.customColors && chartConfig.customColors[d.name]) || (chartConfig.yAxes && chartConfig.yAxes[0]?.color) || '#3d3185'
-          }
+          value: d.value
         }));
       } else {
         // fallback: aggregate by yAxes (old logic)
@@ -1363,10 +1360,7 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
           }, 0);
           return {
             name: axis.name,
-            value: total,
-            itemStyle: {
-              color: (chartConfig.customColors && chartConfig.customColors[axis.name]) || axis.color || '#3d3185'
-            }
+            value: total
           };
         });
       }
@@ -1425,16 +1419,13 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
       const ohlcData = (data || []).map(row => [
         row[chartConfig.xAxis], // Date or X value
         Number(row.open),
-        Number(row.close),
-        Number(row.low),
         Number(row.high),
-        Number(row.volume) // Optional
+        Number(row.low),
+        Number(row.close),
+        Number(row.volume)
       ]);
-      const dates = ohlcData.map(item => item[0]);
-      const upColor = '#ec0000';
-      const upBorderColor = '#8A0000';
-      const downColor = '#00da3c';
-      const downBorderColor = '#008F28';
+      // Convert date to timestamp for ECharts 'time' axis
+      const ohlcDataWithTimestamps = ohlcData.map(item => [moment(item[0]).valueOf(), ...item.slice(1)]);
       return {
         backgroundColor: '#fff',
         title: {
@@ -1447,11 +1438,7 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
             color: '#3d3185'
           }
         },
-        legend: {
-          data: ['Candlestick', 'Volume'],
-          inactiveColor: '#777',
-          top: 50
-        },
+        legend: { show: false },
         tooltip: {
           trigger: 'axis',
           axisPointer: {
@@ -1479,22 +1466,24 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
         ],
         xAxis: [
           {
-            type: 'category',
-            data: dates,
+            type: 'time',
+            boundaryGap: [0, 0],
             axisLine: { lineStyle: { color: '#8392A5' } },
             axisLabel: {
-              rotate: 45,
-              interval: 'auto',
+              rotate: 0,
+              hideOverlap: true,
               color: '#666',
-              fontSize: 9,
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-              margin: 6
-            }
+              fontSize: 12,
+              formatter: (value: number) => moment(value).format('YYYY-MM-DD'),
+            },
+            minInterval: 24 * 3600 * 1000, // 1 day
+            splitNumber: 10,
+            axisPointer: { label: { show: true } },
           },
           {
-            type: 'category',
+            type: 'time',
+            boundaryGap: [0, 0],
             gridIndex: 1,
-            data: dates,
             axisLine: { lineStyle: { color: '#8392A5' } },
             axisLabel: { show: false }
           }
@@ -1549,12 +1538,12 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
           {
             name: 'Candlestick',
             type: 'candlestick',
-            data: ohlcData.map(item => [item[1], item[2], item[3], item[4]]), // [open, close, low, high]
+            data: ohlcDataWithTimestamps.map(item => [item[0], item[1], item[4], item[3], item[2]]), // [timestamp, open, close, low, high]
             itemStyle: {
-              color: upColor,
-              color0: downColor,
-              borderColor: upBorderColor,
-              borderColor0: downBorderColor
+              color: '#FD1050',      // Red for up
+              color0: '#0CF49B',     // Green for down
+              borderColor: '#FD1050',
+              borderColor0: '#0CF49B'
             }
           },
           {
@@ -1562,7 +1551,7 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
             type: 'bar',
             xAxisIndex: 1,
             yAxisIndex: 1,
-            data: ohlcData.map(item => item[5]),
+            data: ohlcDataWithTimestamps.map(item => item[5]),
             itemStyle: {
               color: '#7fbe9e'
             }
