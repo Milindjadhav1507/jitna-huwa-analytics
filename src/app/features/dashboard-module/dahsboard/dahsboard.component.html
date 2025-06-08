@@ -1,0 +1,344 @@
+<div class="container-fluid p-4">
+  <div class="row">
+    <div class="col-md-2">
+      <!-- Templates section removed -->
+      <!-- Saved Charts List -->
+      <div class="chart-templates-section mt-4">
+        <h5 class="section-title"><i class="bi bi-bar-chart"></i> Saved Charts</h5>
+        <div class="input-group input-group-sm mb-2 chart-search-input">
+          <span class="input-group-text bg-white border-end-0">
+            <i class="fas fa-search"></i>
+          </span>
+          <input type="text" class="form-control border-start-0" placeholder="Search charts..." [(ngModel)]="searchChartTerm">
+        </div>
+        <div class="d-grid gap-2 compact-chart-list">
+          <!-- Widget Items -->
+          <div class="template-item compact"
+               *ngFor="let widget of widgetTemplates"
+               draggable="true"
+               (dragstart)="dragWidget($event, widget)">
+            <button class="btn btn-outline-warning chart-btn w-100 compact-btn d-flex align-items-center justify-content-between">
+              <span class="d-flex align-items-center gap-2">
+                <i class="fas" [class]="widget.icon"></i>
+                <span class="chart-title-text">{{ widget.title }}</span>
+              </span>
+            </button>
+          </div>
+          <!-- Existing Chart Items -->
+          <div class="template-item compact"
+               *ngFor="let chart of filteredCharts"
+               draggable="true"
+               (dragstart)="dragChart($event, chart)">
+            <button class="btn btn-outline-warning chart-btn w-100 compact-btn d-flex align-items-center justify-content-between">
+              <span class="d-flex align-items-center gap-2">
+                <i class="fas" [class]="getChartIcon(chart.type)"></i>
+                <span class="chart-title-text">{{ chart.title || 'Untitled Chart' }}</span>
+              </span>
+              <span class="chart-actions ms-auto d-flex align-items-center gap-1">
+                <button type="button" class="btn btn-link btn-sm p-0 chart-edit-btn" (click)="editChart(chart)" title="Edit"><i class="fas fa-edit"></i></button>
+                <button type="button" class="btn btn-link btn-sm p-0 chart-delete-btn" (click)="deleteChart(chart)" title="Delete"><i class="fas fa-trash-alt"></i></button>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-10 dashboard-wrapper">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Dashboard</h2>
+        <div class="d-flex gap-3">
+
+          <button class="btn btn-outline-danger" style="background-color: white !important;color: #3d3185 !important;" (click)="resetDashboard()">
+            <i class="fas fa-redo me-2"></i>Reset
+          </button>
+          <button class="btn btn-outline-primary" (click)="saveAsTemplate()">
+            <i class="fas fa-save me-2"></i>Save as Template
+          </button>
+          <button class="btn btn-outline-danger" style="background-color: white !important;color: #3d3185 !important;" routerLink="/excel-preview">
+            <i class="fas fa-arrow-left"></i> Previous Step
+          </button>
+          <!-- ... other buttons ... -->
+        </div>
+      </div>
+      <div class="dashboard-header">
+        <h5 class="section-title"><i class="bi bi-layout-wtf"></i> Analytics Dashboard</h5>
+      </div>
+      <div id="dashboard" class="dashboard" (dragover)="allowDrop($event)" (drop)="dropOnDashboard($event)">
+        <!-- Charts -->
+        <div *ngFor="let chart of charts" class="chart-card" [id]="'card-' + chart.id"
+             [ngStyle]="{
+               top: chart.top,
+               left: chart.left,
+               width: chart.width,
+               height: chart.height,
+               transform: chart.transform
+             }"
+             style="position: absolute;">
+          <button class="delete-btn" (click)="removeChart(chart)">
+            <i class="bi bi-x"></i>
+          </button>
+          <div [id]="chart.id" class="chart-container">
+            <div class="chart-header">
+              <span>{{ chart.title || chart.type || 'Custom Chart' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Widgets -->
+        <div *ngFor="let widget of widgets" class="widget-card" [id]="'card-' + widget.id"
+             [ngStyle]="{
+               top: widget.top,
+               left: widget.left,
+               width: widget.width,
+               height: widget.height,
+               transform: widget.transform
+             }"
+             style="position: absolute;">
+          <button class="delete-btn" (click)="removeWidget(widget)">
+            <i class="bi bi-x"></i>
+          </button>
+          <div class="widget-header">
+            <h6><i [class]="widget.content.icon"></i> {{ widget.content.title }}</h6>
+          </div>
+          <div class="widget-content">
+            <!-- Modern Upcoming Tasks UI -->
+            <ng-container *ngIf="widget.content.tasks; else defaultWidgetContent">
+              <div class="task-timeline-widget position-relative">
+                <div class="timeline-line"></div>
+                <div *ngFor="let task of widget.content.tasks; let i = index" class="timeline-row">
+                  <div class="timeline-date-col">
+                    <div class="timeline-date-main">{{ task.due }}</div>
+                    <div class="timeline-time">10:30 AM</div>
+                  </div>
+                  <div class="timeline-icon-col">
+                    <span class="timeline-activity-icon">
+                      <i class="fa-solid fa-calendar"></i>
+                    </span>
+                  </div>
+                  <div class="timeline-content">
+                    <div class="fw-semibold mb-1">{{ task.title }}</div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                      <span class="badge"
+                            [ngClass]="{
+                              'bg-primary': task.status === 'Scheduled',
+                              'bg-success': task.status === 'In Progress',
+                              'bg-secondary': task.status === 'Pending'
+                            }">
+                        {{ task.status }}
+                      </span>
+                      <span class="badge"
+                            [ngClass]="{
+                              'bg-danger': task.priority === 'High',
+                              'bg-warning': task.priority === 'Medium',
+                              'bg-success': task.priority === 'Low'
+                            }">
+                        {{ task.priority }}
+                      </span>
+                    </div>
+                    <div class="timeline-desc">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam euismod.</div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+            <ng-template #defaultWidgetContent>
+              <div class="widget-value">
+                <span class="value">{{ widget.content.value }}</span>
+                <span class="trend" [class.up]="widget.content.trendDirection === 'up'"
+                      [class.down]="widget.content.trendDirection === 'down'">
+                  <i [class]="widget.content.trendDirection === 'up' ? 'bi bi-arrow-up' :
+                            widget.content.trendDirection === 'down' ? 'bi bi-arrow-down' : 'bi bi-dash'"></i>
+                  {{ widget.content.trend }}
+                </span>
+              </div>
+              <!-- Widget Details -->
+              <div class="widget-details" *ngIf="widget.content.details">
+                <div class="detail-item" *ngFor="let detail of widget.content.details">
+                  <span class="detail-label"
+                        [class.status-processing]="detail.status === 'Processing'"
+                        [class.status-payment]="detail.status === 'Awaiting Payment'"
+                        [class.status-ship]="detail.status === 'Ready to Ship'"
+                        [class.priority-high]="detail.priority === 'High'"
+                        [class.priority-medium]="detail.priority === 'Medium'"
+                        [class.priority-low]="detail.priority === 'Low'"
+                        [class.stock-low]="detail.category === 'Low Stock'"
+                        [class.stock-out]="detail.category === 'Out of Stock'"
+                        [class.stock-in]="detail.category === 'In Stock'">
+                    {{ detail.status || detail.category || detail.priority }}
+                  </span>
+                  <span class="detail-value">{{ detail.count }}</span>
+                </div>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- Tables -->
+        <div *ngFor="let table of tables" class="table-card" [id]="'card-' + table.id"
+             [ngStyle]="{
+               top: table.top,
+               left: table.left,
+               width: table.width,
+               height: table.height,
+               transform: table.transform
+             }"
+             style="position: absolute;">
+          <button class="delete-btn" (click)="removeTable(table)">
+            <i class="bi bi-x"></i>
+          </button>
+          <div class="table-header">
+            <h6>{{ table.title }}</h6>
+          </div>
+          <div class="table-content">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th *ngFor="let key of getTableHeaders(table.data)">{{ key }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of table.data">
+                  <td *ngFor="let key of getTableHeaders(table.data)">
+                    <span *ngIf="key === 'status'" [class]="'status-badge ' + row[key].toLowerCase()">
+                      {{ row[key] }}
+                    </span>
+                    <span *ngIf="key !== 'status'">{{ row[key] }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Data Lists -->
+        <div *ngFor="let list of dataLists" class="list-card" [id]="'card-' + list.id"
+             [ngStyle]="{
+               top: list.top,
+               left: list.left,
+               width: list.width,
+               height: list.height,
+               transform: list.transform
+             }"
+             style="position: absolute;">
+          <button class="delete-btn" (click)="removeDataList(list)">
+            <i class="bi bi-x"></i>
+          </button>
+          <div class="list-header">
+            <h6>{{ list.title }}</h6>
+          </div>
+          <div class="list-content">
+            <div *ngFor="let item of list.data" class="list-item">
+              <div class="item-icon" [class]="'priority-' + item.priority">
+                <i class="bi" [class]="getPriorityIcon(item.priority)"></i>
+              </div>
+              <div class="item-content">
+                <h6>{{ item.title }}</h6>
+                <p>{{ item.description }}</p>
+                <span class="item-time">{{ item.time }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Chart Modal -->
+<div *ngIf="isEditChartModalVisible" class="modal fade show compact-chart-modal" tabindex="-1" style="display: block; background: rgba(0,0,0,0.3);">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 960px; min-width: 320px; margin: auto;">
+    <div class="modal-content" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);">
+      <div class="modal-header bg-light py-3 border-bottom" style="border-radius: 12px 12px 0 0;">
+        <div class="container-fluid px-2">
+          <div class="d-flex align-items-center">
+            <h5 class="modal-title fs-4 mb-0">
+              <i class="fas fa-edit me-2 text-primary"></i>Edit Chart
+            </h5>
+          </div>
+          <div class="data-source-info mt-2" *ngIf="editingChart?.sheetName">
+            Sheet: <span class="fw-bold">- {{ editingChart.sheetName }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-body p-3">
+        <div class="row g-3 align-items-stretch">
+          <div class="col-md-4">
+            <div class="chart-settings card border-0 shadow-sm h-100" style="min-height: 100%;">
+              <div class="card-body p-3">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Chart Type</label>
+                  <div class="dropdown">
+                    <button class="form-select form-select-sm text-start d-flex align-items-center justify-content-between" type="button" id="editChartTypeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                      <span>
+                        <i *ngIf="editChartType" [class]="getChartIcon(editChartType)" class="me-2"></i>
+                        {{ editChartType ? editChartType.charAt(0).toUpperCase() + editChartType.slice(1) + ' Chart' : 'Select chart type' }}
+                      </span>
+                      <i class="fas fa-chevron-down ms-2"></i>
+                    </button>
+                    <ul class="dropdown-menu w-100" aria-labelledby="editChartTypeDropdown">
+                      <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='line'; updateEditChartPreview()"><i class="fas fa-chart-line me-2"></i>Line Chart</a></li>
+                      <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='bar'; updateEditChartPreview()"><i class="fas fa-chart-bar me-2"></i>Bar Chart</a></li>
+                      <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='pie'; updateEditChartPreview()"><i class="fas fa-chart-pie me-2"></i>Pie Chart</a></li>
+                      <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='doughnut'; updateEditChartPreview()"><i class="fas fa-circle-notch me-2"></i>Doughnut Chart</a></li>
+                      <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='scatter'; updateEditChartPreview()"><i class="fas fa-braille me-2"></i>Scatter Chart</a></li>
+                      <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='area'; updateEditChartPreview()"><i class="fas fa-chart-area me-2"></i>Area Chart</a></li>
+                      <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='candlestick'; updateEditChartPreview()"><i class="fas fa-chart-column me-2"></i>Candlestick Chart</a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-bold">X-Axis</label>
+                  <select class="form-select form-select-sm" [(ngModel)]="editXAxis" (change)="updateEditChartPreview()">
+                    <option value="">Select X-axis</option>
+                    <option *ngFor="let header of editingChart?.headers || []" [value]="header">{{header}}</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Y-Axis Series</label>
+                  <div class="y-axis-series border rounded px-2" style="max-height: 120px; overflow-y: auto; scrollbar-width: thin;">
+                    <div *ngFor="let y of editingChart?.headers || []" class="d-flex align-items-center mb-2">
+                      <div class="form-check flex-grow-1">
+                        <input class="form-check-input" type="checkbox" [checked]="editYAxes.includes(y)" (change)="toggleEditYAxis(y, $event); updateEditChartPreview()">
+                        <label class="form-check-label">{{y}}</label>
+                      </div>
+                      <input type="color" class="form-control form-control-color ms-2" [value]="editCustomColors[y] || '#3d3185'" (change)="updateEditSeriesColor(y, $event); updateEditChartPreview()" style="width: 36px; height: 28px;">
+                    </div>
+                  </div>
+                  <small class="text-muted">Select one or more columns for Y-axis</small>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label fw-bold d-flex align-items-center">Chart Title <span class="text-danger ms-1">*</span></label>
+                  <div class="input-group input-group-sm">
+                    <input type="text" class="form-control" [(ngModel)]="editChartTitle" (input)="updateEditChartPreview()" [class.is-invalid]="!editChartTitle" placeholder="Enter a descriptive title for your chart" required>
+                    <button class="btn btn-outline-secondary" type="button" (click)="editChartTitle=''; updateEditChartPreview()"><i class="fas fa-times"></i></button>
+                    <div class="invalid-feedback">Please enter a chart title</div>
+                  </div>
+                  <small class="text-muted mt-1 d-block"><i class="fas fa-info-circle me-1"></i>A clear title helps others understand your visualization</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8 d-flex align-items-center justify-content-center" style="min-height: 400px;">
+            <div class="chart-card w-100" style="background: none; box-shadow: none; display: flex; align-items: center; justify-content: center;">
+              <div class="chart-container d-flex align-items-center justify-content-center"
+                   style="background: #fafbfc; border-radius: 18px; width: 100%; max-width: 520px; aspect-ratio: 4/3; height: auto; min-height: 320px; max-height: 420px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); border: 1px solid #eee; padding: 0; overflow: hidden; outline: none;">
+                <div #editChartPreview style="width: 100%; height: 100%; max-width: 100%; max-height: 100%; min-width: 0; min-height: 0; object-fit: contain; background: #fafbfc; border-radius: 18px; outline: none; border: none; box-shadow: none;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light py-2 border-top" style="border-radius: 0 0 12px 12px;">
+        <div class="container-fluid px-2">
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light btn-sm px-3" (click)="closeEditChartModal()">
+              <i class="fas fa-times me-2"></i>Close
+            </button>
+            <button type="button" class="btn btn-primary btn-sm px-3" (click)="saveEditedChart()" [disabled]="!editChartTitle || !editChartType || !editXAxis || editYAxes.length === 0">
+              <i class="fas fa-save me-2"></i>Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

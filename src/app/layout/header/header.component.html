@@ -1,0 +1,227 @@
+<div class="header-wrapper" *ngIf="showComponent">
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+            <a class="navbar-brand"
+                style="margin-top: 0px !important;font-family: 'bootstrap-icons';font-weight: 800;color: #3f328a;">
+                <img src="../../../assets/images/e-logo-2.svg" alt="ESARWA Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item" routerLink="/home" routerLinkActive="active">
+                        <a class="nav-link">Home</a>
+                    </li>
+
+                    <li class="nav-item" routerLink="/import-data" routerLinkActive="active">
+                        <a class="nav-link">Import Data</a>
+                    </li>
+                    <li class="nav-item" routerLink="/sheet-preview" routerLinkActive="active">
+                        <a class="nav-link">Sheet Preview</a>
+                    </li>
+                    <li class="nav-item" routerLink="/excel-preview" routerLinkActive="active">
+                        <a class="nav-link">Data Preview</a>
+                    </li>
+                    <li class="nav-item" routerLink="/dashboard" routerLinkActive="active">
+                        <a class="nav-link">Create Dashboard</a>
+                    </li>
+                    <li class="nav-item" routerLink="/dashboard/saved-templates" routerLinkActive="active">
+                        <a class="nav-link">Saved Dashboard</a>
+                    </li>
+                    <!-- <li class="nav-item" routerLink="/dashboard/saved-templates" routerLinkActive="active">
+                        <a class="nav-link">Final</a>
+                    </li> -->
+                    <!-- <li class="nav-item" routerLink="/join-data" routerLinkActive="active">
+                        <a class="nav-link">Data Join</a>
+                    </li> -->
+                    <!-- <li class="nav-item">
+                        <a class="nav-link">Visualization</a>
+                    </li> -->
+                </ul>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="d-flex align-items-center">
+                <!-- Workspace Dropdown -->
+                <div class="workspace-dropdown me-3" (mouseenter)="showWorkspaceInfo()" (mouseleave)="hideWorkspaceInfo()">
+                    <div class="d-flex align-items-center workspace-selector">
+                        <div class="workspace-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <div class="selected-workspace ms-2" *ngIf="thisIsMyData.selected_workspace">
+                            <span class="workspace-name">{{thisIsMyData.selected_workspace}}</span>
+                            <i class="fas fa-chevron-down ms-2 text-muted"></i>
+                        </div>
+                        <div class="selected-workspace ms-2" *ngIf="!thisIsMyData.selected_workspace">
+                            <span class="text-muted">Select Project</span>
+                            <i class="fas fa-chevron-down ms-2 text-muted"></i>
+                        </div>
+                    </div>
+                    <!-- Workspace Dropdown Menu -->
+                    <div class="workspace-dropdown-menu" *ngIf="isWorkspaceInfoVisible">
+                        <div class="dropdown-header">
+                            <h6 class="mb-2">Select Project</h6>
+                        </div>
+                        <div class="workspace-list">
+                            <div *ngIf="thisIsMyData.workspaces.length === 0" class="no-workspace px-3 py-2">
+                                <i class="fas fa-info-circle me-2"></i>No workspaces available
+                            </div>
+                            <div *ngFor="let workspace of thisIsMyData.workspaces"
+                                 class="workspace-item px-3 py-2"
+                                 (click)="changeWorkspace(workspace)"
+                                 [class.active]="workspace === thisIsMyData.selected_workspace">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-building me-2"></i>
+                                        <span>{{workspace}}</span>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill" *ngIf="workspace === thisIsMyData.selected_workspace">Current</span>
+                                </div>
+                          </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item create-workspace" (click)="openNewWorkspaceModal()">
+                            <i class="fa-solid fa-plus me-2"></i>Create New Project
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Existing Profile Section -->
+                <div class="profile-section" (mouseenter)="showUserInfo()" (mouseleave)="hideUserInfo()">
+                    <div class="profile-image">
+                        <img src="https://github.com/mdo.png" alt="Profile" class="rounded-circle">
+                        <!-- Profile Dropdown -->
+                        <div class="profile-dropdown" *ngIf="isUserInfoVisible">
+                            <div class="dropdown-header">
+                                <div class="user-avatar">
+                                    <img src="https://github.com/mdo.png" alt="Profile" class="rounded-circle">
+                                </div>
+                                <div class="user-info">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <h6 class="mb-0">{{thisIsMyData.full_name || 'User Name'}}</h6>
+                                        <a class=" btn-link p-0" routerLink="home">
+                                            <i class="fas fa-cog text-muted"></i>
+                                        </a>
+                                    </div>
+                                    <small class="text-muted">{{thisIsMyData.role || 'User Role'}}</small>
+                                    <div class="user-email">{{thisIsMyData.email || 'user@example.com'}}</div>
+                                </div>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <!-- <div class="workspace-info px-3 py-2">
+                                <small class="text-muted d-block mb-1">Current Project</small>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-briefcase me-2 text-primary"></i>
+                                        <span class="workspace-name">{{thisIsMyData.selected_workspace || 'Select a workspace'}}</span>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-link p-0" style="background-color: #fff !important;border: none !important;" type="button" id="workspaceDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-chevron-down text-muted"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="workspaceDropdown" style="min-width: 200px;">
+                                            <li *ngIf="thisIsMyData.workspaces.length === 0">
+                                                <a class="dropdown-item text-muted">
+                                                    <i class="fas fa-info-circle me-2"></i>No workspaces available
+                                                </a>
+                                            </li>
+                                            <li *ngFor="let workspace of thisIsMyData.workspaces">
+                                                <a class="dropdown-item d-flex align-items-center" (click)="changeWorkspace(workspace)">
+                                                    <i class=" me-2" [class.text-primary]="workspace === thisIsMyData.selected_workspace"></i>
+                                                    <span class="flex-grow-1">{{workspace}}</span>
+                                                    <span class="badge bg-primary rounded-pill" *ngIf="workspace === thisIsMyData.selected_workspace">Current</span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center gg" style="background-color:#5b4ea7 !important; color: #fff !important;" routerLink="/workspaces">
+                                                    <i class="fa-solid fa-plus me-2 text-white"></i>Create New Workspace / Project
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div> -->
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger"  (click)="logout(); $event.preventDefault()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="header-strip"></div>
+</div>
+
+<!-- Workspace Modal -->
+<div class="modal" [class.show]="showModal" [class.d-block]="showModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-plus-circle"></i>
+          New Workspace
+        </h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form #workspaceForm="ngForm">
+          <div class="mb-4">
+            <label for="name" class="form-label">
+              <i class="fas fa-folder-open me-2"></i>Workspace Name
+            </label>
+            <input type="text" class="form-control" id="name" name="name"
+                   [(ngModel)]="currentWorkspace.name" required
+                   placeholder="Enter workspace name">
+          </div>
+          <div class="mb-4">
+            <label for="description" class="form-label">
+              <i class="fas fa-align-left me-2"></i>Description
+            </label>
+            <textarea class="form-control" id="description" name="description" rows="3"
+                      [(ngModel)]="currentWorkspace.description" required
+                      placeholder="Describe your workspace"></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <label for="status" class="form-label">
+                <i class="fas fa-toggle-on me-2"></i>Status
+              </label>
+              <select class="form-select" id="status" name="status"
+                      [(ngModel)]="currentWorkspace.status">
+                <option value="active">Active</option>
+                <option value="archived">Archived</option>
+                <option value="draft">Draft</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="members" class="form-label">
+                <i class="fas fa-users me-2"></i>Members
+              </label>
+              <input type="number" class="form-control" id="members" name="members"
+                     [(ngModel)]="currentWorkspace.members" required min="0"
+                     placeholder="Number of members">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">
+          <i class="fas fa-times me-2"></i>Cancel
+        </button>
+        <button type="button" class="btn btn-primary"
+                (click)="saveWorkspace()"
+                [disabled]="!workspaceForm.form.valid">
+          <i class="fas fa-plus me-2"></i>Create
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="showModal"></div>

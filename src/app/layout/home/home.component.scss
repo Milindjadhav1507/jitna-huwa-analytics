@@ -1,0 +1,263 @@
+$font-primary: 'Poppins', Arial, sans-serif; 
+$primary: #3d3185;
+$secondary: #f0ad4e;
+
+@mixin transition($transition...) {
+    -moz-transition:    $transition;
+    -o-transition:      $transition;
+    -webkit-transition: $transition;
+    -ms-transition:     $transition;
+    transition:         $transition;
+}
+@mixin media-breakpoint-down($breakpoint) {
+  
+   @media (max-width: 767.98px) { 
+    @content;
+  }
+}
+
+.wrapper {
+  width: 100%;
+}
+
+#sidebar {
+  min-width: 300px;
+  max-width: 300px;
+  background: $primary;
+  color: #fff;
+  transition: all 0.3s;
+  position: relative; 
+
+  .h6{
+    color: #fff; 
+  }
+
+
+  &.active{
+    margin-left: -300px;
+  }
+
+  h1{
+    margin-bottom: 20px;
+    font-weight: 700;
+    font-size: 30px;
+    .logo{
+        color: #fff; 
+        span{
+            font-size: 14px;
+            color: $secondary;
+            display: block;
+        }
+    }
+  }
+  ul.components{
+    padding: 0;
+  }
+  ul{
+    li{
+        font-size: 16px;
+        >ul{
+            margin-left: 10px;
+            li{
+                font-size: 14px;
+            }
+        }
+        a{
+            padding: 10px 0;
+            display: block;
+            color: rgba(255,255,255,.6);
+            position: relative;
+            // border-bottom: 1px solid rgba(255,255,255,.1);
+            span{ 
+              color: $secondary;
+              margin-right: 0.75rem; 
+            }
+            &:hover{
+                color: #fff; 
+            }
+            
+            // Add styles for active state
+            &.active {
+                color: #fff;
+                padding-left: 15px;
+                
+                span {
+                    color: #fff;
+                }
+
+                .active-indicator {
+                    position: absolute;
+                    left: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 4px;
+                    height: 20px;
+                    background-color: $secondary;
+                    border-radius: 0 2px 2px 0;
+                }
+            }
+        }
+        
+        &.active{
+            > a{
+                background: transparent;
+                color: #fff; 
+            }
+        }
+    }
+  }
+
+  @include media-breakpoint-down(md){ 
+    
+    margin-left: -270px;
+     &.active {
+        margin-left: -270px; 
+     }
+     &:not(.active) {
+         margin-left: 0; 
+     }
+  }
+
+
+  .custom-menu{
+        display: inline-block;
+        position: absolute;
+        top: 20px;
+        right: 0;
+        margin-right: -28px; 
+        @include transition(.3s); 
+        .btn{
+            // width: 60px;
+            // height: 60px;
+            // border-radius: 50%;
+            // position: relative;
+            // background: $primary; // Ensure button background matches sidebar
+            // border-color: $primary;
+            // box-shadow: none !important;
+            // outline: none !important;
+
+            background-color: transparent !important;
+            border: none !important;
+            width: 60px;
+            height: 60px;
+            border-radius: 100;
+            position: relative;
+            background: rgba(52, 69, 180, 0);
+            border-color: rgba(52, 69, 180, 0);
+            box-shadow: none !important;
+            outline: none !important;
+
+            i{
+                // margin-right: -40px; // Original style seems odd, might position icon badly
+                font-size: 14px;
+                color: #fff; // Ensure icon is visible
+                padding-left: 20px;
+            }
+
+            
+            &:after{
+              z-index: -1;
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              content: '';
+              transform: rotate(45deg);
+              background: $primary;
+              border-radius: 10px;
+            }
+
+            &:hover, &:focus{
+            //   background: darken($primary, 5%) !important; // Slight darken on hover
+            //   border-color: darken($primary, 5%) !important;
+            //   box-shadow: none !important;
+            //   outline: none !important;
+            }
+        }
+  }
+}
+
+
+
+a[data-toggle="collapse"] {
+    position: relative;
+}
+
+
+
+#content {
+  width: 100%;
+  padding: 0; // Reset padding, rely on inner divs like p-4
+  min-height: 90vh;
+  transition: all 0.3s; // Content might shift if sidebar width changes, but here it just gets covered/uncovered
+}
+
+
+.footer{
+    p{
+        color: rgba(255,255,255,.5);
+        font-size: 13px; // Make slightly smaller
+         i {
+           color: $secondary; // Color the heart icon
+         }
+         a {
+           color: $secondary;
+           &:hover {
+             color: #fff;
+           }
+         }
+    }
+}
+
+
+.form-control {
+    height: 40px!important;
+    background: #fff; // Use direct value as $white might not be defined unless imported
+    color: #000; // Use direct value as $black might not be defined unless imported
+    font-size: 13px;
+    border-radius: 4px;
+    box-shadow: none !important;
+    border: transparent;
+    &:focus, &:active {
+        // border-color: #000; // Use direct value as $black might not be defined unless imported
+        border-color: $secondary; // Or use a theme color
+        box-shadow: none !important; // Ensure no Bootstrap focus glow if unwanted
+    }
+    &::placeholder { /* Modern browsers */
+      color: rgba(0,0,0,.5); // Placeholder text color inside input
+    }
+     // Add other vendor prefixes for placeholder if needed
+}
+
+.subscribe-form{
+    .form-control{
+        background: lighten($primary,5%);
+        color: #fff; // Text color inside subscribe input
+         &::placeholder {
+           color: rgba(255,255,255,.7);
+         }
+         &:focus, &:active {
+            border-color: $secondary; // Focus border color
+            background: lighten($primary, 8%); // Slightly lighter on focus
+         }
+    }
+    .icon { 
+      color: #ffffffb3;
+      position: absolute; // Position icon inside the input area
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .form-group {
+        position: relative; // Needed for absolute icon positioning
+         .form-control {
+           padding-left: 40px; // Make space for the icon
+         }
+    }
+}
+
+
+a{
+    text-decoration: none !important;
+}

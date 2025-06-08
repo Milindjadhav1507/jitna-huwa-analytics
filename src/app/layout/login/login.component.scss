@@ -1,0 +1,50 @@
+@use "sass:color";
+
+:host {
+  display: block;
+}
+
+.card {
+  border-radius: 8px;
+  border: none;
+}
+
+.form-control {
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  
+  &:focus {
+    box-shadow: none;
+    border-color: #5E35B1;
+  }
+}
+
+.btn-primary {
+  padding: 0.75rem;
+  border: none;
+  
+  &:hover {
+    background-color: color.adjust(#5E35B1, $lightness: -5%) !important;
+  }
+  
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+a {
+  color: #5E35B1;
+  
+  &:hover {
+    color: color.adjust(#5E35B1, $lightness: -10%);
+  }
+}
+
+.input-group-text {
+  background-color: transparent;
+  border-left: none;
+}
+
+.fas.fa-heart {
+  font-size: 14px;
+}

@@ -1,0 +1,75 @@
+<!-- Add Bootstrap and Font Awesome CDN in your index.html if not already added -->
+<div class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
+  <div class="card shadow-lg" style="max-width: 700px; width: 100%;">
+    <div class="card-body p-4">
+      <!-- Header -->
+      <div class="text-center mb-4">
+        <h4 class="text-dark mb-3">Welcome Back!</h4>
+        <div class="d-flex align-items-center justify-content-center gap-2">
+          <p class="mb-0">Sign in to continue to</p>
+          <img src="https://esarwa.com/assets/homepage/e-logo-2.svg"  alt="ESARWA" height="24">
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <form (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label for="email" class="form-label">Email/Mobile</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="email" 
+            [(ngModel)]="email"
+            name="email"
+            placeholder="Email/Mobile">
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-group">
+            <input 
+              type="password" 
+              class="form-control" 
+              id="password"
+              [(ngModel)]="password"
+              name="password"
+              placeholder="Enter password">
+            <button class="btn btn-outline-secondary" type="button">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="text-end mb-3" routerLink="/forget-password">
+          <a  class="text-decoration-none">
+            <i class="fas fa-lock me-1"></i>
+            Forgot your password?
+          </a>
+        </div>
+
+        <button routerLink="/home/getting-started" type="submit" class="btn btn-primary w-100" style="background-color: #5E35B1;">
+          Log In
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div class="text-center mt-4">
+        <p class="mb-3">
+          Don't have an account? 
+          <a routerLink="/register" class="text-decoration-none" style="color: #5E35B1;">Register now</a>
+        </p>
+        
+        <div class="d-flex justify-content-center gap-3">
+          <a  class="text-decoration-none text-dark">English</a>
+          <a  class="text-decoration-none text-dark">हिंदी</a>
+          <a  class="text-decoration-none text-dark">ગુજરાતી</a>
+          <a  class="text-decoration-none text-dark">मराठी</a>
+        </div>
+
+        <p class="text-muted small mt-3">
+          © 2025 ESARWA. Made with <i class="fas fa-heart text-danger"></i> by ESARWA
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

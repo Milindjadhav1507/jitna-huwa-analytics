@@ -1,0 +1,191 @@
+<div class="template-viewer">
+    <!-- Header -->
+    <header class="viewer-header py-3 px-4 bg-white border-bottom">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-link text-dark p-0 me-3" (click)="goBack()">
+                        <i class="fas fa-arrow-left fa-lg"></i>
+                    </button>
+                    <div>
+                        <h4 class="mb-0" *ngIf="template">{{template.name}}</h4>
+                        <small class="text-muted" *ngIf="template">Created on {{template.createdAt | date:'medium'}}</small>
+                    </div>
+                </div>
+                <div class="actions d-flex gap-3">
+                    <button class="btn btn-outline-primary btn-lg action-button" (click)="editTemplate()">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-wrapper me-2">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <div class="d-flex flex-column align-items-start">
+                                <span class="button-label">Edit Template</span>
+                                <small class="button-desc">Modify this template</small>
+                            </div>
+                        </div>
+                    </button>
+                    <!-- <button class="btn btn-primary btn-lg action-button" (click)="useTemplate()">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-wrapper me-2">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="d-flex flex-column align-items-start">
+                                <span class="button-label">Use This Template</span>
+                                <small class="button-desc">Apply to your dashboard</small>
+                            </div>
+                        </div>
+                    </button> -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Template Preview -->
+    <main class="viewer-content p-4">
+        <div class="container-fluid">
+            <!-- Loading State -->
+            <div class="text-center py-5" *ngIf="!template">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 text-muted">Loading template...</p>
+            </div>
+
+            <!-- Error State -->
+            <div class="text-center py-5" *ngIf="template === null">
+                <i class="fas fa-exclamation-circle text-danger fa-3x mb-3"></i>
+                <h4>Template Not Found</h4>
+                <p class="text-muted">The template you're looking for doesn't exist or has been deleted.</p>
+                <button class="btn btn-primary" (click)="goBack()">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Back to Templates
+                </button>
+            </div>
+
+            <!-- Template Content -->
+            <div class="template-content" *ngIf="template">
+                <div class="row">
+                    <!-- Template Info -->
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Template Details</h5>
+                                <hr>
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4">Charts</dt>
+                                    <dd class="col-sm-8">{{template.layout?.charts?.length || 0}}</dd>
+
+                                    <dt class="col-sm-4">Widgets</dt>
+                                    <dd class="col-sm-8">{{template.layout?.widgets?.length || 0}}</dd>
+
+                                    <dt class="col-sm-4">Created</dt>
+                                    <dd class="col-sm-8">{{template.createdAt | date:'shortDate'}}</dd>
+
+                                    <dt class="col-sm-4">ID</dt>
+                                    <dd class="col-sm-8">
+                                        <small class="text-muted">{{template.id}}</small>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Template Preview -->
+                    <div class="col-md-9">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title mb-4">Template Preview</h5>
+                                <div class="template-preview-container">
+                                    <!-- Charts Preview -->
+                                    <div *ngFor="let chart of template.layout?.charts" class="preview-chart mb-3">
+                                        <div class="chart-placeholder bg-light rounded p-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="mb-0">{{chart.type}}</h6>
+                                                <span class="badge bg-primary">Chart</span>
+                                            </div>
+                                            <div class="chart-container" [attr.data-chart-id]="chart.id">
+                                                <div [id]="chart.id" class="chart-preview" [attr.data-chart-type]="chart.type"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Widgets Preview -->
+                                    <div *ngFor="let widget of template.layout?.widgets" class="preview-widget mb-3">
+                                        <div class="widget-placeholder bg-light rounded p-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="mb-0">{{widget.content?.title || widget.type}}</h6>
+                                                <span class="badge bg-success">Widget</span>
+                                            </div>
+                                            <div class="widget-preview bg-white rounded p-3">
+                                                <div class="widget-value">
+                                                    <span class="value">{{widget.content?.value}}</span>
+                                                    <span class="trend" [class.up]="widget.content?.trendDirection === 'up'"
+                                                          [class.down]="widget.content?.trendDirection === 'down'">
+                                                        <i [class]="widget.content?.trendDirection === 'up' ? 'bi bi-arrow-up' :
+                                                                    widget.content?.trendDirection === 'down' ? 'bi bi-arrow-down' : 'bi bi-dash'"></i>
+                                                        {{widget.content?.trend}}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tables Preview -->
+                                    <div *ngFor="let table of template.layout?.tables" class="preview-table mb-3">
+                                        <div class="table-placeholder bg-light rounded p-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="mb-0">{{table.title || table.type}}</h6>
+                                                <span class="badge bg-info">Table</span>
+                                            </div>
+                                            <div class="table-preview bg-white rounded">
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th *ngFor="let key of getTableHeaders(table.data)">{{ key }}</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr *ngFor="let row of table.data.slice(0, 3)">
+                                                            <td *ngFor="let key of getTableHeaders(table.data)">
+                                                                <span *ngIf="key === 'status'" [class]="'status-badge ' + row[key].toLowerCase()">
+                                                                    {{ row[key] }}
+                                                                </span>
+                                                                <span *ngIf="key !== 'status'">{{ row[key] }}</span>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Data Lists Preview -->
+                                    <div *ngFor="let list of template.layout?.dataLists" class="preview-list mb-3">
+                                        <div class="list-placeholder bg-light rounded p-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="mb-0">{{list.title || list.type}}</h6>
+                                                <span class="badge bg-warning">List</span>
+                                            </div>
+                                            <div class="list-preview bg-white rounded">
+                                                <div *ngFor="let item of list.data.slice(0, 3)" class="list-item p-2">
+                                                    <div class="item-icon" [class]="'priority-' + item.priority">
+                                                        <i class="bi" [class]="getPriorityIcon(item.priority)"></i>
+                                                    </div>
+                                                    <div class="item-content">
+                                                        <h6>{{ item.title }}</h6>
+                                                        <p class="small text-muted">{{ item.description }}</p>
+                                                        <span class="item-time">{{ item.time }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>

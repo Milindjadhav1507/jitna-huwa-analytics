@@ -1,0 +1,88 @@
+<div class="page-container">
+  <div class="content-wrap">
+    <div class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
+      <div class="card shadow-lg" style="max-width: 700px; width: 100%;">
+        <!-- Header with Purple Background -->
+        <div class="card-header text-white p-4" style="background-color: #5E35B1;">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h5 class="mb-2">Register</h5>
+              <p class="mb-0">Register your account now to continue to ESARWA.</p>
+            </div>
+            <img src="https://esarwa.com/assets/homepage/e-logo-2.svg" alt="ESARWA" height="32">
+          </div>
+        </div>
+
+        <div class="card-body p-4">
+          <!-- Registration Form -->
+          <form (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label for="firstName" class="form-label">First Name</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="firstName" 
+                [(ngModel)]="firstName"
+                name="firstName"
+                placeholder="First Name">
+            </div>
+
+            <div class="mb-3">
+              <label for="lastName" class="form-label">Last Name</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="lastName" 
+                [(ngModel)]="lastName"
+                name="lastName"
+                placeholder="Last Name">
+            </div>
+
+            <div class="mb-3">
+              <label for="mobile" class="form-label">Mobile</label>
+              <input 
+                type="tel" 
+                class="form-control" 
+                id="mobile" 
+                [(ngModel)]="mobile"
+                name="mobile"
+                placeholder="Enter Mobile Number">
+            </div>
+
+            <div class="mb-4">
+              <div class="form-check">
+                <input 
+                  type="checkbox" 
+                  class="form-check-input" 
+                  id="terms" 
+                  [(ngModel)]="termsAccepted"
+                  name="terms">
+                <label class="form-check-label" for="terms">
+                  By continuing, you agree to Esarwa's 
+                  <a class="text-decoration-none">Terms of service</a> and 
+                  <a class="text-decoration-none">Privacy Policy</a>
+                </label>
+              </div>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn text-white" style="background-color: #5E35B1;">
+                Send OTP
+              </button>
+            </div>
+          </form>
+
+          <!-- Simple Login Link -->
+          <div class="text-center mt-4">
+            <p class="mb-0">
+              Already have an account? 
+              <a routerLink="/login" class="text-decoration-none" style="color: #5E35B1;">Log In</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+</div>

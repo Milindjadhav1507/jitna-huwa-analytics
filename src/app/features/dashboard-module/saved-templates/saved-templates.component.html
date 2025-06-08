@@ -1,0 +1,132 @@
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center">
+            <div class="header-icon-wrapper me-2">
+                <i class="fas fa-bookmark text-primary"></i>
+            </div>
+            <div>
+                <h2 class="mb-0 fs-4">Saved Dashboard Templates</h2>
+                <p class="text-muted mb-0 small">Manage and reuse your dashboard layouts</p>
+            </div>
+        </div>
+        <button class="btn btn-outline-primary btn-sm d-flex align-items-center" (click)="goToDashboard()">
+            <i class="fas fa-arrow-left me-2"></i>
+            Back to Dashboard
+        </button>
+    </div>
+
+    <div class="row g-2">
+        <div class="col-md-3 col-sm-6 col-12" *ngFor="let template of templates; trackBy: trackByTemplate">
+            <div class="card border-0 shadow-sm h-100 compact-card">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <div class="fw-semibold small">{{template.name}}</div>
+                            <div class="text-muted tiny-text">
+                                <i class="far fa-clock me-1"></i>
+                                {{template.createdAt | date:'MMM d, y'}}
+                            </div>
+                        </div>
+                        <div class="d-flex gap-1 align-items-center">
+                            <button class="btn btn-sm btn-outline-secondary" title="View Details" (click)="viewTemplate(template.id)">
+                                <i class="fas fa-eye me-1"></i>View
+                            </button>
+                            <!-- <button class="btn btn-sm btn-outline-primary" title="Use Now" (click)="useTemplate(template)">
+                                <i class="fas fa-check me-1"></i>Use
+                            </button> -->
+                            <button class="icon-btn" title="Share" (click)="shareTemplate(template)"><i class="fas fa-share-alt"></i></button>
+                            <button class="icon-btn text-danger" title="Delete" (click)="deleteTemplate(template.id)"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="template-preview mb-2 bg-light rounded compact-preview hover-effect" (click)="viewTemplate(template.id)">
+                        <ng-container *ngIf="template.layout?.charts?.length > 0; else noChart">
+                            <div class="d-flex align-items-center mb-1">
+                                <span class="fw-bold small">{{template.layout.charts[0].type || 'Chart'}}</span>
+                                <span class="badge bg-primary ms-2">Chart</span>
+                                <span *ngIf="template.layout.charts.length > 1" class="badge bg-secondary ms-2">+{{template.layout.charts.length - 1}}</span>
+                            </div>
+                        </ng-container>
+                        <ng-template #noChart>
+                            <div class="text-center text-muted preview-content">
+                                <div class="preview-icon-wrapper mb-2">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <p class="tiny-text mb-0">No chart in this template</p>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Empty State -->
+        <div class="col-12" *ngIf="templates.length === 0">
+            <div class="text-center py-4 empty-state compact-empty">
+                <div class="empty-state-icon mb-3" style="width:48px;height:48px;">
+                    <i class="fas fa-bookmark"></i>
+                </div>
+                <h6 class="mb-1">No Saved Templates Yet</h6>
+                <p class="text-muted tiny-text mb-3">Save your dashboard layouts as templates to reuse them later.</p>
+                <button class="btn btn-primary btn-sm" (click)="goToDashboard()">
+                    <i class="fas fa-plus me-2"></i>
+                    Create New Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Share Modal -->
+    <div *ngIf="showShareModal" class="modal-backdrop-custom">
+        <div class="share-modal-custom">
+            <div class="modal-header-custom">
+                <div class="d-flex align-items-center">
+                    <div class="modal-icon-wrapper me-3">
+                        <i class="fas fa-share-alt"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Share Template</h5>
+                        <p class="text-muted small mb-0">Get a link to edit this template</p>
+                    </div>
+                </div>
+                <button class="btn-close-custom" (click)="closeShareModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body-custom">
+                <div class="link-section">
+                    <div class="link-header">
+                        <div class="d-flex align-items-center">
+                            <div class="link-icon-wrapper me-2">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <span class="fw-bold">Edit Link</span>
+                        </div>
+                        <span class="badge bg-primary-soft">Editable</span>
+                    </div>
+                    <div class="text-muted small mb-3">Anyone with this link can edit the template</div>
+
+                    <div class="link-input-wrapper">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-link"></i>
+                            </span>
+                            <input type="text" class="form-control" [value]="currentShareUrl" readonly>
+                            <button class="btn btn-primary copy-btn" (click)="copyShareLink()">
+                                <i class="fas" [class.fa-check]="copied" [class.fa-copy]="!copied"></i>
+                                <span>{{ copied ? 'Copied!' : 'Copy' }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="share-actions mt-4">
+                        <button class="btn btn-outline-primary w-100" (click)="copyShareLink()">
+                            <i class="fas fa-copy me-2"></i>
+                            Copy to Clipboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

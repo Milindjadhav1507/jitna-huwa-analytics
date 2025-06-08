@@ -1,0 +1,549 @@
+<div class="container-fluid py-4">
+  <!-- Header Section -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="h2 mb-0">User & Team Management</h1>
+      <p class="text-muted mt-2">Manage users and teams in your organization</p>
+      <div class="mt-2">
+        <small class="text-muted">
+          <strong>Keyboard shortcuts:</strong>
+          <span class="ms-2 me-3">1: Users</span>
+          <span class="me-3">2: Teams</span>
+          <span class="me-3">Ctrl/⌘ + A: Select All</span>
+          <!-- <span class="me-3">Ctrl/⌘ + N: New</span>
+          <span class="me-3">Ctrl/⌘ + E: Edit Selected</span> -->
+          <span class="me-3">Delete: Remove Selected</span>
+        </small>
+      </div>
+    </div>
+    <div class="col-md-4 text-md-end">
+      <button class="btn btn-primary" (click)="activeView === 'users' ? openNewUserModal() : openNewTeamModal()">
+        <i class="fas fa-plus-circle me-2"></i>New {{activeView === 'users' ? 'User' : 'Team'}}
+      </button>
+    </div>
+  </div>
+
+  <!-- View Switcher -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-4">
+          <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="viewRadio" id="userView" 
+                   [checked]="activeView === 'users'" (change)="switchView('users')">
+            <label class="btn btn-outline-primary" for="userView">
+              <i class="fas fa-users me-2"></i>Users
+            </label>
+
+            <input type="radio" class="btn-check" name="viewRadio" id="teamView" 
+                   [checked]="activeView === 'teams'" (change)="switchView('teams')">
+            <label class="btn btn-outline-primary" for="teamView">
+              <i class="fas fa-user-friends me-2"></i>Teams
+            </label>
+          </div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="col-md-8">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <select class="form-select" [(ngModel)]="filters.workspace" (change)="applyFilters()">
+                <option value="">All Workspaces</option>
+                <option value="Analytics">Analytics</option>
+                <option value="Sales">Sales</option>
+                <option value="Marketing">Marketing</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" [(ngModel)]="filters.dataSource" (change)="applyFilters()">
+                <option value="">All Data Sources</option>
+                <option value="MySQL">MySQL</option>
+                <option value="PostgreSQL">PostgreSQL</option>
+                <option value="MongoDB">MongoDB</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-search"></i>
+                </span>
+                <input type="text" class="form-control" placeholder="Search..." 
+                       [(ngModel)]="filters.searchQuery" (input)="applyFilters()">
+              </div>
+            </div>
+            <div class="col-md-2 text-end">
+              <button class="btn btn-danger" 
+                      [disabled]="(activeView === 'users' ? selectedUsers.length : selectedTeams.length) === 0"
+                      (click)="activeView === 'users' ? deleteUsers() : deleteTeams()">
+                <i class="fas fa-trash-alt me-2"></i>Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users View -->
+  <div class="card" *ngIf="activeView === 'users'">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th class="ps-4" style="width: 40px;">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" 
+                         [checked]="allUsersSelected"
+                         (change)="toggleSelectAllUsers()">
+                </div>
+              </th>
+              <th>USER</th>
+              <th>ROLE</th>
+              <th>TEAMS</th>
+              <th>WORKSPACES</th>
+              <th>STATUS</th>
+              <th>LAST ACTIVE</th>
+              <th class="text-end">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of getCurrentPageItems()" (click)="onUserRowClick(user)" style="cursor: pointer;">
+              <td>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" 
+                         [checked]="selectedUsers.includes(user.id)"
+                         (change)="toggleUserSelection(user.id, $event)"
+                         (click)="$event.stopPropagation()">
+                </div>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar" [style.background-color]="getAvatarColor(user.name)">
+                    {{getInitials(user.name)}}
+                  </div>
+                  <div>
+                    <div class="fw-semibold">{{user.name}}</div>
+                    <div class="text-muted small">{{user.email}}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge bg-light text-dark">{{user.role}}</span></td>
+              <td>{{user.teams.length}} teams</td>
+              <td>
+                <div class="d-flex gap-1">
+                  <span class="badge bg-light text-dark" *ngFor="let workspace of user.workspaces">{{workspace}}</span>
+                </div>
+              </td>
+              <td><span class="badge" [class.active]="user.status === 'active'">{{user.status}}</span></td>
+              <td>{{user.lastActive | date:'MMM d, y, h:mm a'}}</td>
+              <td class="text-end">
+                <div class="actions">
+                  <button class="btn btn-sm btn-outline-primary edit_button me-2" (click)="openEditUserModal(user); $event.stopPropagation()">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalPages > 1">
+        <div class="text-muted small">
+          Showing {{getCurrentPageStart()}} to {{getCurrentPageEnd()}} 
+          of {{getTotalItems()}} entries
+        </div>
+        <nav>
+          <ul class="pagination mb-0">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link" href="javascript:void(0)" (click)="onPageChange(currentPage - 1)">Previous</a>
+            </li>
+            <li class="page-item" *ngFor="let page of [].constructor(totalPages); let i = index" 
+                [class.active]="currentPage === i + 1">
+              <a class="page-link" href="javascript:void(0)" (click)="onPageChange(i + 1)">{{i + 1}}</a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link" href="javascript:void(0)" (click)="onPageChange(currentPage + 1)">Next</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Teams View -->
+  <div class="card" *ngIf="activeView === 'teams'">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th class="ps-4" style="width: 40px;">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" 
+                         [checked]="allTeamsSelected"
+                         (change)="toggleSelectAllTeams()">
+                </div>
+              </th>
+              <th>TEAM</th>
+              <th>MEMBERS</th>
+              <th>WORKSPACES</th>
+              <th>DATA SOURCES</th>
+              <th>CREATED</th>
+              <th class="text-end">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let team of getCurrentPageItems()" (click)="onTeamRowClick(team)" style="cursor: pointer;">
+              <td>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" 
+                         [checked]="selectedTeams.includes(team.id)"
+                         (change)="toggleTeamSelection(team.id, $event)"
+                         (click)="$event.stopPropagation()">
+                </div>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="team-icon me-3">
+                    <i class="fas fa-user-friends fa-lg text-primary"></i>
+                  </div>
+                  <div>
+                    <div class="fw-semibold">{{team.name}}</div>
+                    <div class="text-muted small">{{team.description}}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <span class="badge bg-light text-dark">{{team.members.length}} members</span>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex gap-1">
+                  <span class="badge bg-light text-dark" *ngFor="let ws of team.workspaces">{{ws}}</span>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex gap-1">
+                  <span class="badge bg-light text-dark" *ngFor="let ds of team.dataSources">{{ds}}</span>
+                </div>
+              </td>
+              <td>{{team.createdAt | date:'mediumDate'}}</td>
+              <td class="text-end">
+                <div class="actions">
+                  <button class="btn btn-sm btn-outline-primary edit_button me-2" (click)="openEditTeamModal(team); $event.stopPropagation()">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalPages > 1">
+        <div class="text-muted small">
+          Showing {{getCurrentPageStart()}} to {{getCurrentPageEnd()}} 
+          of {{getTotalItems()}} entries
+        </div>
+        <nav>
+          <ul class="pagination mb-0">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link" href="javascript:void(0)" (click)="onPageChange(currentPage - 1)">Previous</a>
+            </li>
+            <li class="page-item" *ngFor="let page of [].constructor(totalPages); let i = index" 
+                [class.active]="currentPage === i + 1">
+              <a class="page-link" href="javascript:void(0)" (click)="onPageChange(i + 1)">{{i + 1}}</a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link" href="javascript:void(0)" (click)="onPageChange(currentPage + 1)">Next</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Modal -->
+  <div class="modal" [class.show]="showUserModal" [class.d-block]="showUserModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas" [class.fa-user-edit]="isEditMode" [class.fa-user-plus]="!isEditMode"></i>
+            {{isEditMode ? 'Edit' : 'New'}} User
+          </h5>
+          <button type="button" class="btn-close" (click)="closeUserModal()"></button>
+        </div>
+        <div class="modal-body">
+          <form #userForm="ngForm">
+            <div class="mb-4">
+              <label class="form-label">
+                <i class="fas fa-user me-2"></i>Full Name
+              </label>
+              <input type="text" class="form-control" name="name" 
+                     [(ngModel)]="currentUser.name" required>
+            </div>
+            <div class="mb-4">
+              <label class="form-label">
+                <i class="fas fa-envelope me-2"></i>Email
+              </label>
+              <input type="email" class="form-control" name="email" 
+                     [(ngModel)]="currentUser.email" required>
+            </div>
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label class="form-label">
+                  <i class="fas fa-user-tag me-2"></i>Role
+                </label>
+                <select class="form-select" name="role" [(ngModel)]="currentUser.role">
+                  <option value="Admin">Admin</option>
+                  <option value="Analyst">Analyst</option>
+                  <option value="User">User</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">
+                  <i class="fas fa-toggle-on me-2"></i>Status
+                </label>
+                <select class="form-select" name="status" [(ngModel)]="currentUser.status">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="form-label">
+                <i class="fas fa-users me-2"></i>Teams
+              </label>
+              <select class="form-select" multiple name="teams" [(ngModel)]="currentUser.teams">
+                <option *ngFor="let team of teams" [value]="team.id">{{team.name}}</option>
+              </select>
+            </div>
+            <div class="mb-4">
+              <label class="form-label">
+                <i class="fas fa-project-diagram me-2"></i>Workspaces
+              </label>
+              <select class="form-select" multiple name="workspaces" [(ngModel)]="currentUser.workspaces">
+                <option value="Analytics">Analytics</option>
+                <option value="Sales">Sales</option>
+                <option value="Marketing">Marketing</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeUserModal()">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button type="button" class="btn btn-primary" 
+                  (click)="saveUser()" 
+                  [disabled]="!userForm.form.valid">
+            <i class="fas" [class.fa-save]="isEditMode" [class.fa-plus]="!isEditMode"></i>
+            <span class="ms-2">{{isEditMode ? 'Update' : 'Create'}}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Modal -->
+  <div class="modal" [class.show]="showTeamModal" [class.d-block]="showTeamModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas" [class.fa-edit]="isEditMode" [class.fa-plus-circle]="!isEditMode"></i>
+            {{isEditMode ? 'Edit' : 'New'}} Team
+          </h5>
+          <button type="button" class="btn-close" (click)="closeTeamModal()"></button>
+        </div>
+        <div class="modal-body">
+          <form #teamForm="ngForm">
+            <div class="mb-4">
+              <label class="form-label">
+                <i class="fas fa-users me-2"></i>Team Name
+              </label>
+              <input type="text" class="form-control" name="name" 
+                     [(ngModel)]="currentTeam.name" required>
+            </div>
+            <div class="mb-4">
+              <label class="form-label">
+                <i class="fas fa-info-circle me-2"></i>Description
+              </label>
+              <textarea class="form-control" name="description" rows="3"
+                        [(ngModel)]="currentTeam.description" required></textarea>
+            </div>
+            <div class="mb-4">
+              <label class="form-label">
+                <i class="fas fa-user-plus me-2"></i>Members
+              </label>
+              <select class="form-select" multiple name="members" [(ngModel)]="currentTeam.members">
+                <option *ngFor="let user of users" [value]="user.id">{{user.name}}</option>
+              </select>
+            </div>
+            <div class="mb-4">
+              <label class="form-label">
+                <i class="fas fa-project-diagram me-2"></i>Workspaces
+              </label>
+              <select class="form-select" multiple name="workspaces" [(ngModel)]="currentTeam.workspaces">
+                <option value="Analytics">Analytics</option>
+                <option value="Sales">Sales</option>
+                <option value="Marketing">Marketing</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeTeamModal()">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button type="button" class="btn btn-primary" 
+                  (click)="saveTeam()" 
+                  [disabled]="!teamForm.form.valid">
+            <i class="fas" [class.fa-save]="isEditMode" [class.fa-plus]="!isEditMode"></i>
+            <span class="ms-2">{{isEditMode ? 'Update' : 'Create'}}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Profile Modal -->
+  <div class="modal" [class.show]="showProfileModal" [class.d-block]="showProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-user me-2"></i>User Profile
+          </h5>
+          <button type="button" class="btn-close" (click)="closeProfileModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center mb-4">
+            <div class="user-avatar user-avatar-lg mx-auto mb-3" 
+                 [style.background-color]="getAvatarColor(currentUser.name)">
+              {{getInitials(currentUser.name)}}
+            </div>
+            <h4 class="mb-1">{{currentUser.name}}</h4>
+            <p class="text-muted">{{currentUser.email}}</p>
+            <span class="badge" [class.bg-success]="currentUser.status === 'active'" 
+                  [class.bg-secondary]="currentUser.status === 'inactive'">
+              {{currentUser.status}}
+            </span>
+          </div>
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h6 class="card-title">
+                    <i class="fas fa-users me-2"></i>Teams
+                  </h6>
+                  <div class="mt-3">
+                    <span class="badge bg-light text-dark me-2 mb-2" 
+                          *ngFor="let teamId of currentUser.teams">
+                      {{getTeamNameById(teamId)}}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h6 class="card-title">
+                    <i class="fas fa-project-diagram me-2"></i>Workspaces
+                  </h6>
+                  <div class="mt-3">
+                    <span class="badge bg-light text-dark me-2 mb-2" 
+                          *ngFor="let ws of currentUser.workspaces">
+                      {{ws}}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Details Modal -->
+  <div class="modal" [class.show]="showTeamDetailsModal" [class.d-block]="showTeamDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-users me-2"></i>Team Details
+          </h5>
+          <button type="button" class="btn-close" (click)="closeTeamDetailsModal()"></button>
+        </div>
+        <div class="modal-body" *ngIf="currentTeamDetails">
+          <div class="text-center mb-4">
+            <div class="team-icon team-icon-lg mx-auto mb-3">
+              <i class="fas fa-user-friends fa-2x text-primary"></i>
+            </div>
+            <h4 class="mb-1">{{currentTeamDetails.name}}</h4>
+            <p class="text-muted">{{currentTeamDetails.description}}</p>
+          </div>
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h6 class="card-title">
+                    <i class="fas fa-users me-2"></i>Members
+                  </h6>
+                  <div class="mt-3">
+                    <span class="badge bg-light text-dark me-2 mb-2" 
+                          *ngFor="let memberId of currentTeamDetails.members">
+                      {{getMemberName(memberId)}}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h6 class="card-title">
+                    <i class="fas fa-project-diagram me-2"></i>Workspaces
+                  </h6>
+                  <div class="mt-3">
+                    <span class="badge bg-light text-dark me-2 mb-2" 
+                          *ngFor="let ws of currentTeamDetails.workspaces">
+                      {{ws}}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="card">
+                <div class="card-body">
+                  <h6 class="card-title">
+                    <i class="fas fa-database me-2"></i>Data Sources
+                  </h6>
+                  <div class="mt-3">
+                    <span class="badge bg-light text-dark me-2 mb-2" 
+                          *ngFor="let ds of currentTeamDetails.dataSources">
+                      {{ds}}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Backdrop -->
+  <div class="modal-backdrop fade show" 
+       *ngIf="showUserModal || showTeamModal || showProfileModal"></div>
+</div>

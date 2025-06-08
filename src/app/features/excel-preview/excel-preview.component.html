@@ -1,0 +1,413 @@
+<div class="container-fluid py-3">
+    <!-- Header Section -->
+    <div class="card mb-3 border-0 shadow-sm">
+        <div class="card-body p-3">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="fw-bold fs-4 mb-1 " style="color: #3d3185 !important;">
+                        <i class="fas fa-table-list me-2"></i> Data Preview
+                    </h2>
+                    <!-- <p class="text-muted small mb-0">Review and analyze your imported data before proceeding.</p> -->
+                </div>
+                <div class="col-lg-6 text-lg-end">
+                    <button class="btn btn-sm btn-light me-2" style="background-color: #fff !important; color: #3d3185 !important;" (click)="downloadData()">
+                        <i class="fas fa-download me-1"></i>
+                    </button>
+
+                    <button class="btn btn-sm btn-info me-2" (click)="openChartModal()">
+                        <i class="fas fa-chart-bar me-1"></i>Create Chart
+                    </button>
+
+                    <button class="btn btn-sm btn-light me-2" style="background-color: #fff !important; color: #3d3185 !important;" routerLink="/dashboard">
+                      <i class="fas fa-arrow-right"></i> Next Steps
+
+                    </button>
+                    <!-- <button class="btn btn-sm btn-success" (click)="proceedToNextStep()">
+                        <i class="fas fa-arrow-right me-1"></i>Next
+                    </button> -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sheet Tabs -->
+    <ul class="nav nav-tabs mb-3" *ngIf="sheetsData.length > 1">
+        <li class="nav-item" *ngFor="let sheet of sheetsData; let i = index">
+            <a class="nav-link fw-bold d-flex align-items-center"
+               [class.active]="i === selectedSheetIndex"
+               style="cursor:pointer;"
+               (click)="selectSheet(i)">
+                <span class="sheet-status-dot me-2"
+                      [class.has-charts]="hasSheetCharts(sheet.sheetName)"
+                      [class.no-charts]="!hasSheetCharts(sheet.sheetName)"
+                      [title]="hasSheetCharts(sheet.sheetName) ? 'Has charts' : 'No charts'">
+                </span>
+                {{ sheet.sheetName || 'Sheet ' + (i + 1) }}
+            </a>
+        </li>
+    </ul>
+
+    <!-- Data Preview Table -->
+    <div class="card border-0 shadow-sm table-container">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="font-size: 0.875rem;">
+                    <thead class="table-light">
+                        <tr style="height: 40px;">
+                            <th style="width: 50px; padding: 0.5rem;">
+                                <div class="d-flex align-items-center">
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               [checked]="areAllRowsSelected()"
+                                               (change)="selectAllRows()">
+                                    </div>
+                                </div>
+                            </th>
+                            <th *ngFor="let header of headers" class="px-3" style="padding: 0.5rem;">
+                                <div class="d-flex align-items-center">
+                                    <div class="form-check me-2">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               [checked]="isColumnSelected(header)"
+                                               (change)="toggleColumnSelection(header)">
+                                    </div>
+                                    <div class="column-header flex-grow-1">
+                                        <div class="column-name" *ngIf="!isEditingColumn(header)" (dblclick)="startEditingColumn(header)">
+                                            {{header}}
+                                        </div>
+                                        <input *ngIf="isEditingColumn(header)"
+                                               type="text"
+                                               class="form-control form-control-sm"
+                                               [(ngModel)]="editingColumnName"
+                                               (blur)="stopEditingColumn(header)"
+                                               (keyup.enter)="stopEditingColumn(header)">
+                                        <select class="form-select form-select-sm mt-2 custom-select-sm"
+                                                [ngModel]="getColumnType(header)"
+                                                (ngModelChange)="onDataTypeChange(header, $event)">
+                                            <option *ngFor="let type of availableDataTypes"
+                                                    [value]="type.value"
+                                                    [title]="type.label"
+                                                    [class.text-primary]="type.value === getColumnType(header)">
+                                                {{type.displayText}}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="ms-2">
+                                        <button class="btn btn-sm btn-link p-0"
+                                                style="background-color: transparent !important; color: #dc3545 !important; border: none !important;"
+                                                (click)="deleteColumn(header)">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let row of previewData; let i = index" style="height: 40px;">
+                            <td style="padding: 0.5rem;">
+                                <div class="d-flex align-items-center">
+                                    <input type="checkbox" class="form-check-input" [(ngModel)]="row.selected">
+                                    <button class="btn btn-sm btn-link p-0 ms-2"
+                                            style="background-color: transparent !important; color: #dc3545 !important; border: none !important;"
+                                            (click)="deleteRow(i)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td *ngFor="let header of headers" class="px-3" style="padding: 0.5rem;">
+                                <div class="data-cell"
+                                     [class.text-muted]="!isColumnSelected(header)"
+                                     (dblclick)="startEditingCell(row, header)"
+                                     *ngIf="!isEditingCell(row, header)">
+                                    {{row[header]}}
+                                </div>
+                                <input *ngIf="isEditingCell(row, header)"
+                                       type="text"
+                                       class="form-control form-control-sm"
+                                       [(ngModel)]="row[header]"
+                                       (blur)="stopEditingCell(row, header)"
+                                       (keyup.enter)="stopEditingCell(row, header)">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
+                  <span class="small text-muted">
+                    {{ getPaginationSummary() }}
+                  </span>
+                </div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center pagination-sm mb-0">
+                        <li class="page-item" [class.disabled]="currentPage === 1">
+                            <a class="page-link" (click)="changePage(1)" title="First Page">
+                              <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item" [class.disabled]="currentPage === 1">
+                            <a class="page-link" (click)="changePage(currentPage - 1)" title="Previous">
+                              <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item" *ngFor="let page of getPageNumbers()"
+                            [class.active]="page === currentPage">
+                            <a class="page-link" (click)="changePage(page)">{{page}}</a>
+                        </li>
+                        <li class="page-item" [class.disabled]="currentPage === totalPages">
+                            <a class="page-link" (click)="changePage(currentPage + 1)" title="Next">
+                              <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item" [class.disabled]="currentPage === totalPages">
+                            <a class="page-link" (click)="changePage(totalPages)" title="Last Page">
+                              <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selected Rows Actions -->
+    <div class="row mt-2" *ngIf="hasSelectedRows()">
+        <div class="col-12">
+            <div class="d-flex align-items-center">
+                <span class="me-3 small">{{getSelectedRowCount()}} rows selected</span>
+                <button class="btn btn-sm btn-danger me-2" (click)="deleteSelectedRows()">
+                    <i class="fas fa-trash me-1"></i>Delete Selected
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Modal -->
+    <div *ngIf="isChartModalVisible" class="modal fade show compact-chart-modal" id="chartModal" tabindex="-1" aria-labelledby="chartModalLabel" aria-modal="true" role="dialog" style="display: block; background: rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 1200px; min-width: 350px; margin: auto;">
+            <div class="modal-content" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);">
+                <div class="modal-header bg-light py-3 border-bottom" style="border-radius: 12px 12px 0 0;">
+                    <div class="container-fluid px-2">
+                        <div class="d-flex align-items-center">
+                            <h5 class="modal-title fs-4 mb-0" id="chartModalLabel">
+                                <i class="fas fa-chart-network me-2 text-primary"></i>Create Visualization
+                            </h5>
+                        </div>
+                        <div class="data-source-info mt-2">
+                            <!-- <i class="fas fa-table me-2" style="background-color:  #ce7714;"></i> -->
+                            Sheet:    <span class="fw-bold">-  {{ sheetsData[selectedSheetIndex]?.sheetName || 'Sheet 1' }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body p-3">
+                    <div class="row g-3 align-items-stretch">
+                        <div class="col-md-4">
+                            <div class="chart-settings card border-0 shadow-sm h-100" style="min-height: 100%;">
+                                <div class="card-body p-3">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            Chart Type
+                                        </label>
+                                        <div class="dropdown">
+                                            <button class="form-select form-select-sm text-start d-flex align-items-center justify-content-between"
+                                                    type="button"
+                                                    id="chartTypeDropdown"
+                                                    data-bs-toggle="dropdown"
+                                                    aria-expanded="false">
+                                                <span>
+                                                    <i *ngIf="selectedChartType" [class]="getChartTypeIcon(selectedChartType)" class="me-2"></i>
+                                                    {{ selectedChartType ? getChartTypeLabel(selectedChartType) : 'Select chart type' }}
+                                                </span>
+                                                <i class="fas fa-chevron-down ms-2"></i>
+                                            </button>
+                                            <ul class="dropdown-menu w-100" aria-labelledby="chartTypeDropdown">
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="selectChartType('line')">
+                                                    <i class="fas fa-chart-line me-2"></i>Line Chart
+                                                </a></li>
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="selectChartType('bar')">
+                                                    <i class="fas fa-chart-bar me-2"></i>Bar Chart
+                                                </a></li>
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="selectChartType('pie')">
+                                                    <i class="fas fa-chart-pie me-2"></i>Pie Chart
+                                                </a></li>
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="selectChartType('doughnut')">
+                                                    <i class="fas fa-circle-notch me-2"></i>Doughnut Chart
+                                                </a></li>
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="selectChartType('scatter')">
+                                                    <i class="fas fa-braille me-2"></i>Scatter Chart
+                                                </a></li>
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="selectChartType('area')">
+                                                    <i class="fas fa-chart-area me-2"></i>Area Chart
+                                                </a></li>
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="selectChartType('candlestick')">
+                                                  <i class="fas fa-chart-column me-2"></i>Candlestick Chart
+                                                </a></li>
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="selectChartType('pivot')">
+                                                  <i class="fas fa-table me-2"></i>Pivot Table
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <!-- Pivot Table Configuration -->
+                                    <div *ngIf="selectedChartType === 'pivot'" class="mb-3">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Rows</label>
+                                            <select class="form-select form-select-sm" multiple [(ngModel)]="pivotConfig.rows" (change)="generateChart()">
+                                                <option *ngFor="let header of getSelectedHeaders()" [value]="header">{{header}}</option>
+                                            </select>
+                                            <small class="text-muted">Select one or more columns for rows</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Columns</label>
+                                            <select class="form-select form-select-sm" multiple [(ngModel)]="pivotConfig.columns" (change)="generateChart()">
+                                                <option *ngFor="let header of getSelectedHeaders()" [value]="header">{{header}}</option>
+                                            </select>
+                                            <small class="text-muted">Select one or more columns for columns</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Values</label>
+                                            <select class="form-select form-select-sm" multiple [(ngModel)]="pivotConfig.values" (change)="generateChart()">
+                                                <option *ngFor="let header of getSelectedHeaders()" [value]="header">{{header}}</option>
+                                            </select>
+                                            <small class="text-muted">Select numeric columns to aggregate</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- X-Axis Dropdown for all charts except Pie/Doughnut/Pivot -->
+                                    <div class="mb-3" *ngIf="selectedChartType && selectedChartType !== 'pie' && selectedChartType !== 'doughnut' && selectedChartType !== 'pivot'">
+                                      <label class="form-label fw-bold">X-Axis</label>
+                                      <select class="form-select form-select-sm" [(ngModel)]="selectedXAxis" (change)="onAxisChange()">
+                                        <option value="">Select X-axis</option>
+                                        <option *ngFor="let header of getSelectedHeaders()" [value]="header">{{header}}</option>
+                                      </select>
+                                    </div>
+
+                                    <!-- Label Dropdown for Pie/Doughnut -->
+                                    <div class="mb-3" *ngIf="selectedChartType === 'pie' || selectedChartType === 'doughnut'">
+                                      <label class="form-label fw-bold">Label</label>
+                                      <select class="form-select form-select-sm" [(ngModel)]="selectedXAxis" (change)="onAxisChange()">
+                                        <option value="">Select label (X-axis)</option>
+                                        <option *ngFor="let header of getCategoryHeaders()" [value]="header">{{header}}</option>
+                                      </select>
+                                    </div>
+                                    <!-- Aggregate Dropdown for Pie/Doughnut -->
+                                    <div class="mb-3" *ngIf="selectedChartType === 'pie' || selectedChartType === 'doughnut'">
+                                      <label class="form-label fw-bold">Aggregate</label>
+                                      <select class="form-select form-select-sm" [(ngModel)]="selectedAggregateColumn" (change)="onAggregateChange()">
+                                        <option value="">Select value to aggregate</option>
+                                        <option *ngFor="let header of getNumericHeaders()" [value]="header">{{header}}</option>
+                                      </select>
+                                    </div>
+
+                                    <!-- Y-Axis Series for all charts except Pivot -->
+                                    <div class="mb-3" *ngIf="selectedChartType && selectedChartType !== 'pivot'">
+                                      <label class="form-label fw-bold d-flex align-items-center justify-content-between">
+                                        <span>Y-Axis Series</span>
+                                        <small class="text-muted">Select multiple columns</small>
+                                      </label>
+                                      <div class="y-axis-series border rounded p-2" style="max-height: 200px; overflow-y: auto; background-color: #f8f9fa;">
+                                        <div *ngFor="let header of getSelectedHeaders()"
+                                             class="y-axis-option d-flex align-items-center p-2 mb-1 rounded"
+                                             [class.selected]="selectedYAxes.includes(header)"
+                                             [style.background-color]="selectedYAxes.includes(header) ? 'rgba(61, 49, 133, 0.05)' : 'transparent'">
+                                          <div class="form-check flex-grow-1">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   [id]="'yAxis-' + header"
+                                                   [checked]="selectedYAxes.includes(header)"
+                                                   (change)="onYAxisChange(header, $event)">
+                                            <label class="form-check-label d-flex align-items-center" [for]="'yAxis-' + header">
+                                              <span class="text-truncate">{{header}}</span>
+                                              <span *ngIf="selectedYAxes.includes(header)" class="badge bg-primary ms-2">Selected</span>
+                                            </label>
+                                          </div>
+                                          <div class="d-flex align-items-center ms-2">
+                                            <input type="color"
+                                                   class="form-control form-control-color"
+                                                   [value]="customColors[header] || getRandomColor()"
+                                                   (change)="updateSeriesColor(header, $event)"
+                                                   style="width: 32px; height: 32px; padding: 2px; border-radius: 4px;">
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <small class="text-muted mt-2 d-block">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Select one or more columns to display on the Y-axis. Each series can have its own color.
+                                      </small>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <label class="form-label fw-bold d-flex align-items-center">
+                                            Chart Title <span class="text-danger ms-1">*</span>
+                                        </label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text"
+                                                   class="form-control"
+                                                   [(ngModel)]="chartTitle"
+                                                   (input)="onTitleChange()"
+                                                   [class.is-invalid]="!chartTitle && isTitleTouched"
+                                                   placeholder="Enter a descriptive title for your chart"
+                                                   required>
+                                            <button class="btn btn-outline-secondary" type="button" (click)="chartTitle = ''">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            <div class="invalid-feedback">
+                                                Please enter a chart title
+                                            </div>
+                                        </div>
+                                        <small class="text-muted mt-1 d-block">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            A clear title helps others understand your visualization
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="chart-card">
+                                <div *ngIf="selectedChartType === 'candlestick'" class="custom-candlestick-header text-center mb-2">
+                                    <div class="candlestick-title fw-bold" style="font-size: 1.5rem; color: #3d3185;">{{ chartTitle || 'Candlestick Chart' }}</div>
+                                    <div class="candlestick-legend d-flex justify-content-center align-items-center gap-3 mt-2 mb-2">
+                                        <span class="legend-box" style="background:#FD1050;"></span> <span class="legend-label">Candlestick</span>
+                                        <span class="legend-box" style="background:#7fbe9e;"></span> <span class="legend-label">Volume</span>
+                                    </div>
+                                </div>
+                                <div class="chart-container">
+                                    <div #chartCanvas style="position: relative; height: 100%; width: 100%;">
+                                        <!-- Chart will be rendered here -->
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <div class="text-center mt-2" *ngIf="selectedChartType === 'pie' || selectedChartType === 'doughnut'">
+                                <small class="text-muted bg-light py-1 px-2 rounded-pill">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Tip: Select categorical data for better pie/doughnut chart visualization
+                                </small>
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2 border-top" style="border-radius: 0 0 12px 12px;">
+                    <div class="container-fluid px-2">
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-light btn-sm px-3" (click)="closeChartModal()">
+                                <i class="fas fa-times me-2"></i>Close
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm px-3"
+                                    (click)="saveChart()">
+                                <i class="fas fa-save me-2"></i>Save Chart Configuration
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

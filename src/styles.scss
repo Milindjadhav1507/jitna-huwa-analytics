@@ -1,0 +1,22 @@
+
+
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+html, body {
+    width: 100%;
+    height: 100%;
+    font-family: "Open Sans", sans-serif;
+    font-weight: 300;
+}
+
+
+.btn {
+    background-color: #3d3185 !important;
+    color: #fff !important;
+    border: 1px solid #3d3185 !important;
+}
+
+
+.diagram-container {
+    min-height: 73vh !important;
+}

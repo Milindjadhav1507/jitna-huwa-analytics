@@ -1,0 +1,115 @@
+<div class="join-data-container">
+  <header class="page-header">
+    <div class="header-content">
+      <div class="title-group">
+        <h2>Join Data</h2>
+        <p>Connect tables by dragging between primary and foreign keys</p>
+      </div>
+      <div class="header-actions">
+        <button class="action-btn outline" (click)="resetLayout()">
+          <i class="bi bi-arrow-counterclockwise"></i>
+          Reset Layout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="diagram-wrapper" #diagramWrapper>
+    <div class="diagram-container" #diagramContainer>
+      <div class="content-wrapper" [class.zooming]="isZooming" [style.transform]="'scale(' + currentZoom + ')'">
+        <!-- Tables -->
+        <div class="table-card" 
+             *ngFor="let table of tables" 
+             [id]="table.id"
+             [style.left.px]="table.position.x"
+             [style.top.px]="table.position.y">
+          <div class="table-header">
+            <i class="bi bi-table"></i>
+            <span class="table-name">{{table.name}}</span>
+            <div class="table-actions">
+              <button class="icon-btn" (click)="toggleTableCollapse(table)" [title]="table.isCollapsed ? 'Expand' : 'Collapse'">
+                <i class="bi" [class.bi-chevron-up]="!table.isCollapsed" [class.bi-chevron-down]="table.isCollapsed"></i>
+              </button>
+            </div>
+          </div>
+          <div class="table-body" [class.collapsed]="table.isCollapsed">
+            <!-- Columns Section -->
+            <div class="columns-section">
+              <div class="column" *ngFor="let column of table.columns" 
+                   [class.primary-key]="column.isPrimaryKey" 
+                   [class.foreign-key]="column.isForeignKey">
+                <div class="column-info">
+                  <div class="key-indicator">
+                    <i class="bi bi-key-fill" *ngIf="column.isPrimaryKey" title="Primary Key"></i>
+                    <i class="bi bi-link" *ngIf="column.isForeignKey" title="Foreign Key"></i>
+                  </div>
+                  <span class="column-name">{{column.name}}</span>
+                </div>
+                <span class="column-type" [title]="column.type">{{column.type}}</span>
+              </div>
+            </div>
+
+            <!-- Data Preview Section -->
+            <div class="data-preview-section" *ngIf="!table.isCollapsed">
+              <div class="preview-header">
+                <span>Data Preview</span>
+                <span class="preview-count">{{table.previewData.length}} rows</span>
+              </div>
+              <div class="preview-table">
+                <div class="preview-row header">
+                  <div class="preview-cell" *ngFor="let column of table.columns">
+                    {{column.name}}
+                  </div>
+                </div>
+                <div class="preview-row" *ngFor="let row of table.previewData">
+                  <div class="preview-cell" *ngFor="let column of table.columns" [title]="row[column.name]">
+                    {{row[column.name]}}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zoom controls -->
+    <div class="zoom-controls">
+      <button class="zoom-btn" (click)="zoomOut()" [disabled]="currentZoom <= MIN_ZOOM">
+        <i class="fas fa-minus"></i>
+      </button>
+      <span class="zoom-percentage">{{ formatZoomPercentage() }}</span>
+      <button class="zoom-btn" (click)="zoomIn()" [disabled]="currentZoom >= MAX_ZOOM">
+        <i class="fas fa-plus"></i>
+      </button>
+      <button class="zoom-btn reset-btn" (click)="resetZoom()" [disabled]="currentZoom === 1">
+        <i class="fas fa-redo-alt"></i>
+      </button>
+    </div>
+
+    <!-- Zoom shortcuts help -->
+    <div class="zoom-shortcuts-help">
+      <p>Ctrl + Mouse wheel to zoom</p>
+      <p>Ctrl + Click to reset zoom</p>
+      <p>Ctrl + (+/-) to zoom in/out</p>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <footer class="legend">
+    <div class="legend-items">
+      <div class="legend-item">
+        <i class="bi bi-key-fill"></i>
+        <span>Primary Key</span>
+      </div>
+      <div class="legend-item">
+        <i class="bi bi-link"></i>
+        <span>Foreign Key</span>
+      </div>
+      <div class="legend-item">
+        <div class="connection-line"></div>
+        <span>Relationship</span>
+      </div>
+    </div>
+  </footer>
+</div>

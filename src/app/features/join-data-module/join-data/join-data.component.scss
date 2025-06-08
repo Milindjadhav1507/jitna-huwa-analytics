@@ -1,0 +1,628 @@
+// Variables
+:host {
+  --primary-color: #4a90e2;
+  --primary-light: #6ba3e8;
+  --primary-dark: #357abd;
+  --secondary-color: #f5f7fa;
+  --text-primary: #2c3e50;
+  --text-secondary: #6b7c93;
+  --border-color: #e4e9f0;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+}
+
+// Base styles
+.join-data-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--secondary-color);
+  padding: var(--spacing-lg);
+  gap: var(--spacing-lg);
+}
+
+// Header styles
+.page-header {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .title-group {
+    h2 {
+      color: var(--text-primary);
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin: var(--spacing-xs) 0 0;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Button styles
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.primary {
+    background: var(--primary-color);
+    color: white;
+
+    &:hover {
+      background: var(--primary-dark);
+    }
+  }
+
+  &.outline {
+    background: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+
+    &:hover {
+      background: rgba(74, 144, 226, 0.1);
+    }
+  }
+
+  i {
+    font-size: 1rem;
+  }
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  padding: var(--spacing-xs);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+
+  &:hover {
+    background: var(--secondary-color);
+  }
+}
+
+// Diagram container
+.diagram-wrapper {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 180px);
+  overflow: hidden;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+
+  .diagram-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+
+    .content-wrapper {
+      position: absolute;
+      min-width: 100%;
+      min-height: 100%;
+      transform-origin: 0 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: var(--spacing-xl);
+
+      &.zooming {
+        transition: none;
+      }
+    }
+  }
+
+  // Table styles with improved positioning
+  .table-card {
+    position: absolute;
+    min-width: 280px;
+    max-width: 400px;
+    background: white;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    margin: var(--spacing-lg);  // Add margin for better spacing
+    z-index: 1;
+    
+    &:hover {
+      box-shadow: var(--shadow-lg);
+      z-index: 2;
+    }
+
+    &.dragging {
+      z-index: 1000;
+      opacity: 0.9;
+      box-shadow: var(--shadow-lg);
+      cursor: grabbing;
+      
+      .jtk-endpoint {
+        opacity: 0.7;
+      }
+    }
+  }
+
+  // Table styles with zoom consideration
+  .table-card {
+    position: absolute;
+    min-width: 280px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+    
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 2;
+    }
+  }
+
+  // Zoom controls
+  .zoom-controls {
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .zoom-btn {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 6px;
+      background: #f0f0f0;
+      color: #333;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background: #e0e0e0;
+        transform: translateY(-1px);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      i {
+        font-size: 1.2rem;
+      }
+
+      &.reset-btn {
+        background: var(--primary-color);
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: var(--primary-dark);
+        }
+
+        &:disabled {
+          background: #ccc;
+        }
+      }
+    }
+
+    .zoom-percentage {
+      padding: 0 0.75rem;
+      font-size: 0.9rem;
+      color: #666;
+      font-weight: 500;
+      min-width: 64px;
+      text-align: center;
+      border-left: 1px solid #eee;
+      border-right: 1px solid #eee;
+    }
+  }
+
+  // Zoom shortcuts help
+  .zoom-shortcuts-help {
+    position: absolute;
+    bottom: 2rem;
+    left: 2rem;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 0.85rem;
+    color: #666;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+
+    &:hover {
+      opacity: 1;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    p {
+      margin: 0.25rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &:before {
+        content: '⌘';
+        font-size: 1rem;
+        opacity: 0.5;
+      }
+    }
+  }
+}
+
+// Table card styles
+.table-card {
+  position: absolute;
+  min-width: 280px;
+  max-width: 400px;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  z-index: 1;
+  
+  &:hover {
+    box-shadow: var(--shadow-lg);
+    z-index: 2;
+  }
+
+  &.dragging {
+    z-index: 1000;
+    opacity: 0.9;
+    box-shadow: var(--shadow-lg);
+    cursor: grabbing;
+    
+    .jtk-endpoint {
+      opacity: 0.7;
+    }
+  }
+  
+  .table-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--secondary-color);
+    border-bottom: 1px solid var(--border-color);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    cursor: move;
+    user-select: none;
+
+    i {
+      color: var(--primary-color);
+      font-size: 1.1rem;
+    }
+
+    .table-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .table-actions {
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .table-body {
+    padding: var(--spacing-sm);
+    transition: all 0.3s ease;
+    max-height: 500px;
+    overflow: hidden;
+
+    &.collapsed {
+      max-height: 0;
+      padding: 0;
+    }
+  }
+
+  .columns-section {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .column {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    
+    &:hover {
+      background: var(--secondary-color);
+    }
+
+    &.primary-key {
+      background: rgba(241, 196, 15, 0.1);
+      .key-indicator i {
+        color: #f1c40f;
+      }
+    }
+
+    &.foreign-key {
+      background: rgba(155, 89, 182, 0.1);
+      .key-indicator i {
+        color: #9b59b6;
+      }
+    }
+  }
+
+  .column-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  .column-name {
+    color: var(--text-primary);
+  }
+
+  .column-type {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+  }
+
+  // Data Preview Section
+  .data-preview-section {
+    border-top: 1px solid var(--border-color);
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-xs);
+      padding: 0 var(--spacing-xs);
+
+      span {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+
+      .preview-count {
+        background: var(--secondary-color);
+        padding: 2px 6px;
+        border-radius: var(--radius-sm);
+      }
+    }
+
+    .preview-table {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+
+      .preview-row {
+        display: flex;
+        border-bottom: 1px solid var(--border-color);
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &.header {
+          background: var(--secondary-color);
+          font-weight: 500;
+        }
+
+        .preview-cell {
+          flex: 1;
+          padding: var(--spacing-xs) var(--spacing-sm);
+          font-size: 0.85rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          border-right: 1px solid var(--border-color);
+
+          &:last-child {
+            border-right: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Legend styles
+.legend {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+
+  .legend-items {
+    display: flex;
+    gap: var(--spacing-xl);
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+
+    i {
+      color: var(--primary-color);
+    }
+
+    .connection-line {
+      width: 20px;
+      height: 2px;
+      background: var(--primary-color);
+    }
+  }
+}
+
+// jsPlumb connection styles
+.jtk-connector {
+  z-index: 1;
+  transform-origin: 0 0;
+  
+  path {
+    stroke: var(--primary-color);
+    stroke-width: 1.5;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  &:hover {
+    z-index: 2;
+    
+    path {
+      stroke: var(--primary-dark);
+      stroke-width: 2;
+    }
+  }
+}
+
+// Endpoint styles
+.jtk-endpoint {
+  z-index: 3;
+  cursor: crosshair;
+  transition: all 0.2s ease;
+  transform-origin: center;
+  
+  svg circle {
+    fill: var(--primary-color);
+    stroke: var(--primary-dark);
+    stroke-width: 1;
+    transition: all 0.2s ease;
+  }
+  
+  &:hover {
+    transform: scale(1.2);
+    
+    svg circle {
+      fill: var(--primary-dark);
+    }
+  }
+  
+  &.jtk-endpoint-connected {
+    cursor: pointer;
+  }
+}
+
+// Connection label styles
+.jtk-overlay {
+  transform-origin: center;
+  transition: transform 0.3s ease;
+  
+  &.connection-label {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+  }
+}
+
+// Arrow overlay styles
+.jtk-overlay-arrow {
+  z-index: 2;
+  transition: all 0.2s ease;
+  
+  svg {
+    fill: var(--primary-color);
+    stroke: var(--primary-dark);
+    stroke-width: 1;
+  }
+  
+  &.jtk-hover {
+    transform: scale(1.2);
+    
+    svg {
+      fill: var(--primary-dark);
+    }
+  }
+}
+
+// Connection hover effect
+.jtk-connector-outline {
+  stroke: transparent;
+  stroke-width: 4;
+  cursor: pointer;
+}
+
+// Remove any conflicting styles
+.jtk-overlay {
+  &:not(.connection-label) {
+    // Other overlay styles...
+  }
+}
+
+// Zoom animation classes
+.zooming {
+  .table-card {
+    transition: none !important;
+  }
+}
+
+// Zoom level indicator animation
+@keyframes zoom-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.zoom-percentage {
+  &:hover {
+    animation: zoom-pulse 0.3s ease;
+  }
+}

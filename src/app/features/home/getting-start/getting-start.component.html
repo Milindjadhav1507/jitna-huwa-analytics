@@ -1,0 +1,133 @@
+<!-- Welcome Section -->
+<div class="container mt-5">
+    <div class="row">
+      <div class="col-lg-8">
+        <h1 class="display-4 mb-3 lolo">Welcome, {{userName}} !</h1>
+        <p class="lead text-muted fw-semibold">
+          Explore GoodData Cloud, and discover the power of self-service analytics.
+        </p>
+        <button class="btn btn-outline-primary">
+          <i class="fas fa-play-circle"></i> Watch intro video
+        </button>
+      </div>
+      <div class="col-lg-4">
+        <img src="https://esarwa.com/assets/homepage/e-logo-2.svg" alt="Analytics Illustration" class="img-fluid">
+      </div>
+    </div>
+    
+    <!-- Get Started Section -->
+    <div class="mt-5">
+      <h2 class="mb-4">Get started</h2>
+      <div class="row g-4">
+        <!-- Explore Pre-built Environment Card -->
+        <div class="col-lg-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="text-center mb-4">
+                <img src="assets/images/get-started card 1.jpg" alt="Chart Growth" class="card-icon img-fluid" style="height: 150px; width: 100%; object-fit: cover;">
+              </div>
+              <h3 class="card-title h5">Explore a pre-built environment</h3>
+              <p class="card-text">Explore dashboard capabilities using pre-configured sample data.</p>
+              <button class="btn btn-primary" (click)="openDemoDataModal(demoDataModal)">Start</button>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Start from Scratch Card -->
+        <div class="col-lg-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="text-center mb-4">
+                <div class="data-source-logos">
+                  <img src="assets/images/get-started card 2.jpg" alt="Data Sources" class="card-icon img-fluid" style="height: 150px; width: 100%; object-fit: cover;">
+                </div>
+              </div>
+              <h3 class="card-title h5">Start from scratch</h3>
+              <p class="card-text">Connect your own data source and start to build analytics.</p>
+              <button routerLink="/import-data"  class="btn btn-outline-primary">Connect your data</button>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Talk to Expert Card -->
+        <div class="col-lg-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="text-center mb-4">
+                <img src="assets/images/get-started card 3.jpg" alt="Expert Support" class="card-icon img-fluid" style="height: 150px; width: 100%; object-fit: cover;">
+              </div>
+              <h3 class="card-title h5">Talk to an expert | Get a guided tour</h3>
+              <p class="card-text">Talk to an expert for a personalized demo and how to maximize your trial.</p>
+              <button class="btn btn-outline-primary">Contact Us</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Demo Data Source Modal -->
+  <ng-template #demoDataModal let-modal>
+    <div class="modal-header border-0">
+      <h4 class="modal-title" id="modal-basic-title">
+        <i class="fas fa-database me-2"></i>Demo Data Source
+      </h4>
+      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body text-center p-4">
+      <div class="demo-data-illustration mb-4">
+        <img src="assets/images/demo-data-modal.png" alt="Demo Data Illustration" class="img-fluid" style="max-width: 600px;">
+      </div>
+      <h5 class="mb-3">Connect to our Snowflake database with e-commerce demo data.</h5>
+      <p class="text-muted">Ideal for playing around with GoodData.</p>
+      
+      <!-- Workspace Selection Dropdown -->
+      <div class="workspace-selection mt-4">
+        <label for="workspaceSelect" class="form-label">Select Workspace</label>
+        <select class="form-select" id="workspaceSelect" [(ngModel)]="selectedWorkspace" (change)="onWorkspaceSelect(selectedWorkspace)">
+          <option value="">Select a workspace</option>
+          <option *ngFor="let workspace of workspaces" [value]="workspace">{{workspace}}</option>
+          <option value="new">+ Create New Workspace</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer border-0 justify-content-between">
+      <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">Close</button>
+      <button type="button" class="btn btn-primary" [disabled]="!selectedWorkspace" (click)="modal.close()">Connect</button>
+    </div>
+  </ng-template>
+
+  <!-- New Workspace Modal -->
+  <ng-template #newWorkspaceModal let-modal>
+    <div class="modal-header border-0">
+      <h4 class="modal-title" id="new-workspace-title">
+        <i class="fas fa-plus-circle me-2"></i>Create New Workspace
+      </h4>
+      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <form #workspaceForm="ngForm">
+        <div class="mb-4">
+          <label for="workspaceName" class="form-label">Workspace Name</label>
+          <input type="text" class="form-control" id="workspaceName" 
+                 [(ngModel)]="newWorkspace.name" name="name" required
+                 placeholder="Enter workspace name">
+        </div>
+        <div class="mb-4">
+          <label for="description" class="form-label">Description</label>
+          <textarea class="form-control" id="description" 
+                    [(ngModel)]="newWorkspace.description" name="description" 
+                    rows="3" placeholder="Describe your workspace"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer border-0">
+      <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">Cancel</button>
+      <button type="button" class="btn btn-primary" 
+              (click)="createNewWorkspace(modal)" 
+              [disabled]="!newWorkspace.name.trim()">
+        Create Workspace
+      </button>
+    </div>
+  </ng-template>
+  

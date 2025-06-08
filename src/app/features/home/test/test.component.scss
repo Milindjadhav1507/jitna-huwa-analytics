@@ -1,0 +1,97 @@
+// Card hover effects
+.card {
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+}
+
+// Card icon styling
+.card-icon {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+// Data source logos styling
+.data-source-logos {
+  .card-icon {
+    width: 200px; // Wider to accommodate multiple logos
+  }
+}
+
+// Data source icons styling
+.data-source-icons {
+  i {
+    font-size: 2rem;
+    color: #6c757d;
+    transition: color 0.3s ease;
+    
+    &:hover {
+      color: #0d6efd;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .display-4 {
+    font-size: 2.5rem;
+  }
+  
+  .card {
+    margin-bottom: 1rem;
+  }
+  
+  .card-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .data-source-logos {
+    .card-icon {
+      width: 150px;
+    }
+  }
+  
+  .data-source-icons i {
+    font-size: 1.5rem;
+  }
+}
+
+// Button hover effects
+.btn {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+// Custom spacing for icons in buttons
+.btn i {
+  margin-right: 0.5rem;
+}
+
+// Ensure images are responsive
+.img-fluid {
+  max-width: 100%;
+  height: auto;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Lexend+Deca:wght@100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+.lolo{
+  font-family: "Kanit", !important;
+  // font-family: "Kanit", sans-serif;
+  font-weight: 700  !important;
+  font-style: normal  !important;
+  // !important;
+  }

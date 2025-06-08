@@ -1,0 +1,220 @@
+// Card and table styles
+.card {
+  border: none;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+}
+
+.table {
+  th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+  }
+
+  td {
+    vertical-align: middle;
+  }
+}
+
+// Status badge styles
+.badge {
+  padding: 0.5em 0.75em;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+// Button styles
+.btn-light {
+  background-color: #f8f9fa;
+  border-color: #f8f9fa;
+  
+  &:hover {
+    background-color: #e9ecef;
+    border-color: #e9ecef;
+  }
+}
+
+// Mobile card styles
+.list-group-item {
+  border-left: none;
+  border-right: none;
+  
+  &:first-child {
+    border-top: none;
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+// Hover effects
+.btn-group .btn:hover {
+  background-color: #e9ecef;
+}
+
+// Font weight utilities
+.fw-medium {
+  font-weight: 500;
+}
+
+// Icon colors
+.fa-folder {
+  font-size: 1.1rem;
+}
+
+// Enhanced Modal styles with animations
+.modal {
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  
+  &.show {
+    display: block;
+    opacity: 1;
+
+    .modal-dialog {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .modal-dialog {
+    transform: translateY(-50px);
+    opacity: 0;
+    transition: all 0.3s ease-out;
+    margin-top: 50px;
+  }
+}
+
+.modal-content {
+  border: none;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #6e8efb, #4a6cf7);
+  padding: 1.5rem;
+  border-bottom: none;
+  
+  .modal-title {
+    color: white;
+    font-weight: 600;
+    font-size: 1.25rem;
+  }
+
+  .btn-close {
+    color: white;
+    opacity: 1;
+    text-shadow: none;
+    filter: brightness(0) invert(1);
+    
+    &:hover {
+      opacity: 0.75;
+    }
+  }
+}
+
+.modal-body {
+  padding: 2rem 1.5rem;
+  background-color: #f8f9fa;
+
+  .form-label {
+    font-weight: 500;
+    color: #344767;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control, .form-select {
+    border: 1px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    background-color: white;
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.15);
+      border-color: #4a6cf7;
+    }
+  }
+
+  textarea.form-control {
+    min-height: 100px;
+  }
+}
+
+.modal-footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  padding: 1rem 1.5rem;
+
+  .btn {
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    &.btn-secondary {
+      background-color: #e9ecef;
+      border-color: #e9ecef;
+      color: #495057;
+
+      &:hover {
+        background-color: #dee2e6;
+        border-color: #dee2e6;
+      }
+    }
+
+    &.btn-primary {
+      background: linear-gradient(135deg, #6e8efb, #4a6cf7);
+      border: none;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(74, 108, 247, 0.25);
+      }
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 1rem;
+  }
+  
+  .card {
+    border-radius: 0;
+  }
+
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+
+  .modal-content {
+    border-radius: 8px;
+  }
+}
+
+.delete_button {
+  background-color: transparent !important;
+  border: none !important;  
+}
+
+.edit_button {
+  background-color: transparent !important;
+  border: none !important;
+  color: #3d3185 !important;
+}

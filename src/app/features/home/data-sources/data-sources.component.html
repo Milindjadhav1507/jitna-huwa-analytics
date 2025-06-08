@@ -1,0 +1,346 @@
+<div class="data-sources-container">
+  <div class="header-section">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center">
+        <h2 class="fw-bold mb-0">Data sources</h2>
+        <i class="bi bi-info-circle ms-2" title="Data sources information"></i>
+      </div>
+      <button class="btn btn-primary" (click)="onConnectData()">
+        <i class="bi bi-plus"></i> Connect data
+      </button>
+    </div>
+  </div>
+
+  <div class="data-sources-table">
+    <!-- Table Headers -->
+    <div class="table-header">
+      <div class="row g-0 border-bottom py-2">
+        <div class="col-4">
+          <span class="text-muted">Name</span>
+        </div>
+        <div class="col-3">
+          <span class="text-muted">File Name</span>
+        </div>
+        <div class="col-3">
+          <span class="text-muted">Last Modified</span>
+        </div>
+        <div class="col-2 text-end">
+          <span class="text-muted">Actions</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Body -->
+    <div class="table-body">
+      <div class="row g-0 py-3 border-bottom align-items-center" *ngFor="let source of dataSources">
+        <div class="col-4">
+          <div class="d-flex align-items-center">
+            <i class="bi {{source.icon}} me-2" 
+               [class.text-primary]="source.type === 'snowflake'"
+               [class.text-success]="source.type === 'excel'"
+               [class.text-info]="source.type === 'csv'"></i>
+            <span>{{source.name}}</span>
+          </div>
+        </div>
+        <div class="col-3">
+          <span class="text-muted">{{source.fileName || '-'}}</span>
+        </div>
+        <div class="col-3">
+          <span class="text-muted">{{source.timestamp ? (source.timestamp | date:'medium') : '-'}}</span>
+        </div>
+        <div class="col-2 text-end">
+          <div class="dropdown">
+            <button class="btn btn-link btn-sm p-0" type="button" [id]="'dropdownMenuButton' + source.id" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" [attr.aria-labelledby]="'dropdownMenuButton' + source.id">
+              <li>
+                <button class="dropdown-item" (click)="onEditDataSource(source)">
+                  <i class="bi bi-pencil me-2"></i>Edit
+                </button>
+              </li>
+              <li>
+                <button class="dropdown-item text-danger" (click)="onDeleteDataSource(source)">
+                  <i class="bi bi-trash me-2"></i>Delete
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Connect Data Modal -->
+<ng-template #connectDataModal let-modal>
+  <div class="modal-header border-0">
+    <h4 class="modal-title">Connect data</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <p class="text-muted mb-4">Upload your CSV files or connect to our demo database</p>
+
+    <!-- Quick Connect Options -->
+    <div class="quick-connect-options mb-4">
+      <div class="row g-3">
+        <div class="col-md-6" *ngFor="let option of connectOptions">
+          <div class="connect-option-card" (click)="onSelectDataSource(option, modal)">
+            <div class="d-flex align-items-center">
+              <div class="option-icon">
+                <i class="bi {{option.icon}}"></i>
+              </div>
+              <div class="ms-3">
+                <h6 class="mb-1">{{option.name}}</h6>
+                <small class="text-muted">{{option.description}}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Supported Databases Section -->
+    <div class="supported-databases">
+      <h6 class="text-uppercase text-muted mb-3">Supported Databases</h6>
+      <p class="text-muted mb-4">Connect to your data directly in real time without copying it</p>
+      
+      <div class="row g-3">
+        <div class="col-md-4" *ngFor="let db of supportedDatabases">
+          <div class="database-card" (click)="onSelectDatabase(db, modal)">
+            <div class="d-flex align-items-center">
+              <img [src]="db.icon" [alt]="db.name" class="database-icon">
+              <div class="ms-3">
+                <span>{{db.name}}</span>
+                <span class="badge bg-secondary ms-2" *ngIf="db.status">{{db.status}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Notice -->
+    <div class="security-notice mt-4">
+      <div class="d-flex align-items-center text-muted">
+        <i class="bi bi-shield-check me-2"></i>
+        <small>
+          Security you can trust! Learn more about our 
+          <a href="#" class="text-decoration-none">data compliance</a> and 
+          <a href="#" class="text-decoration-none">privacy policy</a>.
+        </small>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- CSV Upload Modal -->
+<ng-template #csvUploadModal let-modal>
+  <div class="modal-header border-0">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-file-text me-2"></i>
+      <input 
+        type="text" 
+        class="form-control border-0 h4 mb-0" 
+        [(ngModel)]="csvDataSourceName" 
+        placeholder="Untitled Data Source"
+      >
+    </div>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <h5 class="mb-3">Upload File (CSV/XLSX)</h5>
+    
+    <div class="csv-upload-area" 
+         (dragover)="onDragOver($event)" 
+         (dragleave)="onDragLeave($event)"
+         (drop)="onDrop($event)"
+         [class.dragging]="isDragging">
+      <div class="text-center py-5">
+        <i class="bi bi-file-earmark-text display-4 mb-3"></i>
+        <p class="mb-2">Drag & drop CSV or Excel file here or</p>
+        <div>
+          <label class="btn btn-link text-primary p-0">
+            Browse files
+            <input 
+              type="file" 
+              class="d-none" 
+              accept=".csv,.xlsx,.xls"
+              (change)="onFileSelected($event)"
+            >
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Show selected file info if any -->
+    <div class="selected-file mt-3" *ngIf="selectedFile">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i>
+        <span>{{selectedFile.name}}</span>
+        <button class="btn btn-link text-danger ms-auto p-0" (click)="removeSelectedFile()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer border-0">
+    <button type="button" class="btn btn-link" (click)="onBack(modal)">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </button>
+    <div class="ms-auto">
+      <button type="button" class="btn btn-outline-secondary me-2" (click)="modal.dismiss()">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="onSave(modal)" [disabled]="!selectedFile">Save</button>
+    </div>
+  </div>
+</ng-template>
+
+<!-- File Preview Modal -->
+<ng-template #filePreviewModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Preview Data</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <div class="preview-settings">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="dataSourceName" class="form-label">Data Source Name</label>
+            <input type="text" class="form-control" id="dataSourceName" [(ngModel)]="csvDataSourceName">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="firstRowHeader" [(ngModel)]="isFirstRowHeader">
+            <label class="form-check-label" for="firstRowHeader">First row is header</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-table-container">
+      <table class="table" *ngIf="csvData">
+        <thead>
+          <tr>
+            <th *ngFor="let column of csvData.headers">
+              {{ column.name }}
+              <select class="form-select form-select-sm" [(ngModel)]="column.type" (change)="onColumnTypeChange(column, column.type)">
+                <option *ngFor="let type of columnTypes" [value]="type">
+                  {{ getColumnTypeDescription(type) }}
+                </option>
+              </select>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of csvData.preview">
+            <td *ngFor="let cell of row">{{ cell }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="onBack(modal)">Back</button>
+    <button type="button" class="btn btn-primary" (click)="onSave(modal)">Save</button>
+  </div>
+</ng-template>
+
+<!-- Demo Database Modal -->
+<ng-template #demoDataModal let-modal>
+  <div class="modal-header border-0">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-database me-2"></i>
+      <h4 class="modal-title mb-0">Demo Data Source</h4>
+    </div>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body text-center px-4">
+    <img src="assets/images/demo-data-modal.png" alt="Demo Data" class="demo-illustration mb-4" style="max-width: 600px;">
+    <h5 class="mb-3">Connect to our Snowflake database with e-commerce demo data.</h5>
+    <p class="text-muted mb-4">Ideal for playing around with GoodData.</p>
+  </div>
+  <div class="modal-footer border-0">
+    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+    <button type="button" class="btn btn-primary" (click)="onConnectDemo(modal)">Connect</button>
+  </div>
+</ng-template>
+
+<!-- Database Connection Modal -->
+<ng-template #databaseConnectionModal let-modal>
+  <div class="modal-header border-0">
+    <div class="d-flex align-items-center">
+      <img [src]="selectedDatabase?.icon" [alt]="selectedDatabase?.name" class="database-icon me-2" style="width: 24px;">
+      <h4 class="modal-title mb-0">{{selectedDatabase?.name}}</h4>
+    </div>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <h5 class="mb-4">Enter your {{selectedDatabase?.name}} credentials</h5>
+
+    <!-- Connection Form -->
+    <form #connectionForm="ngForm">
+      <!-- Connection URL -->
+      <div class="mb-4">
+        <label class="form-label">Connection URL</label>
+        <div class="row g-2">
+          <div class="col">
+            <input type="text" class="form-control" placeholder="Host" [(ngModel)]="databaseConnection.host" name="host" required>
+          </div>
+          <div class="col-auto d-flex align-items-center">:</div>
+          <div class="col-2">
+            <input type="text" class="form-control" [placeholder]="selectedDatabase?.defaultPort" [(ngModel)]="databaseConnection.port" name="port" required>
+          </div>
+        </div>
+        <div class="form-text text-muted">Preview: {{selectedDatabase?.jdbcPrefix}}{{databaseConnection.host}}:{{databaseConnection.port || selectedDatabase?.defaultPort}}</div>
+      </div>
+
+      <!-- SSL Mode -->
+      <div class="mb-4">
+        <label class="form-label">SSL mode</label>
+        <select class="form-select" [(ngModel)]="databaseConnection.sslMode" name="sslMode">
+          <option *ngFor="let option of sslModeOptions" [value]="option.value">{{option.label}}</option>
+        </select>
+      </div>
+
+      <!-- Username -->
+      <div class="mb-4">
+        <label class="form-label">Username</label>
+        <input type="text" class="form-control" [(ngModel)]="databaseConnection.username" name="username" required>
+        <div class="form-text text-muted">Make sure that the user has necessary access rights</div>
+      </div>
+
+      <!-- Password -->
+      <div class="mb-4">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-control" [(ngModel)]="databaseConnection.password" name="password" required>
+      </div>
+
+      <!-- Database name -->
+      <div class="mb-4">
+        <label class="form-label">Database name</label>
+        <input type="text" class="form-control" [(ngModel)]="databaseConnection.database" name="database" required>
+      </div>
+    </form>
+
+    <!-- Allow List Section -->
+    <div class="allow-list-section bg-light p-4 rounded">
+      <h6 class="text-uppercase mb-3">ALLOW LIST</h6>
+      <p class="text-muted mb-3">Add the following IP addresses to your firewall's allowlist to ensure a successful data source connection.</p>
+      <div class="ip-list">
+        <code class="d-block mb-2" *ngFor="let ip of ipAddressesToWhitelist">{{ip}}</code>
+      </div>
+      <a href="#" class="text-decoration-none">Read documentation</a>
+    </div>
+  </div>
+  <div class="modal-footer border-0">
+    <button type="button" class="btn btn-link" (click)="modal.close()">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </button>
+    <div class="ms-auto">
+      <button type="button" class="btn btn-outline-primary me-2" (click)="onTestConnection()">Test connection</button>
+      <button type="button" class="btn btn-primary" (click)="onConnectDatabase(modal)" [disabled]="!connectionForm.form.valid">Connect</button>
+    </div>
+  </div>
+</ng-template>
