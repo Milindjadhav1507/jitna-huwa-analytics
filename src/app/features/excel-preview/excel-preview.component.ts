@@ -868,7 +868,7 @@ export class ExcelPreviewComponent implements OnInit, AfterViewInit {
             {
               name: 'Candlestick',
               type: 'candlestick',
-              data: ohlcDataWithTimestamps.map(item => [item[0], item[1], item[4], item[3], item[2]]),
+              data: ohlcDataWithTimestamps.map(item => [item[0], item[1], item[2], item[3], item[4]]),
               itemStyle: {
                 color: '#FD1050',      // Red for up
                 color0: '#0CF49B',     // Green for down
@@ -1190,19 +1190,28 @@ export class ExcelPreviewComponent implements OnInit, AfterViewInit {
 
     let selectedColumns = this.columnConfigs.filter(c => c.isSelected).map(c => c.name);
     let filteredData;
+    let yAxes;
 
     if (this.selectedChartType === 'candlestick') {
       // Generate OHLC data for dashboard (match dashboard format)
       const ohlcData = this.generateOHLCData(this.allData, this.selectedXAxis, this.selectedYAxes[0]);
       filteredData = ohlcData.map(item => ({
-        [this.selectedXAxis]: item[0],
+        date: item[0], // Always use 'date' as the key
         open: item[1],
         high: item[2],
         low: item[3],
         close: item[4],
         volume: item[5]
       }));
-      selectedColumns = [this.selectedXAxis, 'open', 'high', 'low', 'close', 'volume'];
+      selectedColumns = ['date', 'open', 'high', 'low', 'close', 'volume'];
+      // Always save all yAxes for candlestick
+      yAxes = [
+        { name: 'open', color: this.customColors['open'] || this.getRandomColor() },
+        { name: 'high', color: this.customColors['high'] || this.getRandomColor() },
+        { name: 'low', color: this.customColors['low'] || this.getRandomColor() },
+        { name: 'close', color: this.customColors['close'] || this.getRandomColor() },
+        { name: 'volume', color: this.customColors['volume'] || this.getRandomColor() }
+      ];
     } else if (this.selectedChartType === 'pie' || this.selectedChartType === 'doughnut') {
       // Save pie/doughnut as array of { name, value } objects, grouped by label and aggregated by value
       const groupMap = new Map<string, number>();
@@ -1217,6 +1226,9 @@ export class ExcelPreviewComponent implements OnInit, AfterViewInit {
       }
       filteredData = Array.from(groupMap.entries()).map(([name, value]) => ({ name, value }));
       selectedColumns = [this.selectedXAxis, this.selectedAggregateColumn];
+      yAxes = [
+        { name: this.selectedAggregateColumn, color: this.customColors[this.selectedAggregateColumn] || this.getRandomColor() }
+      ];
     } else {
       filteredData = this.allData.map(row => {
         const filteredRow: any = {};
@@ -1225,6 +1237,10 @@ export class ExcelPreviewComponent implements OnInit, AfterViewInit {
         });
         return filteredRow;
       });
+      yAxes = this.selectedYAxes.map(axis => ({
+        name: axis,
+        color: this.customColors[axis] || this.getRandomColor()
+      }));
     }
 
     const chartId = 'chart-' + Date.now();
@@ -1233,13 +1249,8 @@ export class ExcelPreviewComponent implements OnInit, AfterViewInit {
       type: this.selectedChartType,
       title: this.chartTitle,
       data: filteredData,
-      xAxis: this.selectedXAxis,
-      yAxes: (this.selectedChartType === 'pie' || this.selectedChartType === 'doughnut')
-        ? [{ name: this.selectedAggregateColumn, color: this.customColors[this.selectedAggregateColumn] || this.getRandomColor() }]
-        : this.selectedYAxes.map(axis => ({
-            name: axis,
-            color: this.customColors[axis] || this.getRandomColor()
-          })),
+      xAxis: this.selectedChartType === 'candlestick' ? 'date' : this.selectedXAxis,
+      yAxes: yAxes,
       headers: selectedColumns,
       sheetName: this.sheetsData[this.selectedSheetIndex]?.sheetName || 'Sheet1',
       customColors: this.customColors,
@@ -1551,10 +1562,10 @@ export class ExcelPreviewComponent implements OnInit, AfterViewInit {
       const base = Number(row[yAxis]) || 100;
       const open = base + Math.random() * 5;
       const close = base - Math.random() * 5;
-      const high = Math.max(open, close) + Math.random() * 2;
       const low = Math.min(open, close) - Math.random() * 2;
+      const high = Math.max(open, close) + Math.random() * 2;
       const volume = Math.floor(Math.abs(base) * (1000 + Math.random() * 500));
-      return [row[xAxis], open, high, low, close, volume];
+      return [row[xAxis], open, close, low, high, volume];
     });
   }
 

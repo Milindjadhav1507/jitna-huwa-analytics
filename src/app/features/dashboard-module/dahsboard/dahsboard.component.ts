@@ -1426,6 +1426,8 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
       ]);
       // Convert date to timestamp for ECharts 'time' axis
       const ohlcDataWithTimestamps = ohlcData.map(item => [moment(item[0]).valueOf(), ...item.slice(1)]);
+      // Force green color in edit modal
+      const isEdit = this.isEditChartModalVisible === true;
       return {
         backgroundColor: '#fff',
         title: {
@@ -1539,7 +1541,12 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
             name: 'Candlestick',
             type: 'candlestick',
             data: ohlcDataWithTimestamps.map(item => [item[0], item[1], item[4], item[3], item[2]]), // [timestamp, open, close, low, high]
-            itemStyle: {
+            itemStyle: isEdit ? {
+              color: '#00da3c',      // Green for up
+              color0: '#00da3c',     // Green for down
+              borderColor: '#008F28',
+              borderColor0: '#008F28'
+            } : {
               color: '#FD1050',      // Red for up
               color0: '#0CF49B',     // Green for down
               borderColor: '#FD1050',
@@ -1604,12 +1611,56 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   editChart(chart: any) {
-    this.editingChart = chart.config;
-    this.editChartTitle = chart.title;
-    this.editChartType = chart.type;
-    this.editXAxis = chart.config.xAxis;
-    this.editYAxes = chart.config.yAxes ? chart.config.yAxes.map((y: any) => y.name) : [];
-    this.editCustomColors = { ...chart.config.customColors };
+    // Use chartConfig if present, fallback to config, then to chart itself
+    const config = chart.chartConfig || chart.config || chart;
+    this.editingChart = config;
+    this.editChartTitle = chart.title || config.title;
+    this.editChartType = chart.type || config.type;
+
+    // --- Auto-transform for candlestick ---
+    if ((chart.type || config.type) === 'candlestick') {
+      let data = config.data || [];
+      // Check if data is already in OHLCV format
+      const isOHLCV = data.length > 0 && ['open','high','low','close','volume'].every(k => Object.keys(data[0]).includes(k));
+      if (!isOHLCV && data.length > 0) {
+        // Try to generate fake OHLCV data from available numeric field (e.g., Quantity)
+        data = data.map((row: any, idx: number) => {
+          const base = Number(row.Quantity) || idx + 1;
+          return {
+            date: row.OrderDate || row.date || `2023-01-${(idx+1).toString().padStart(2,'0')}`,
+            open: base,
+            high: base + 2,
+            low: base - 1,
+            close: base + (idx % 2 === 0 ? 1 : -1),
+            volume: base * 100
+          };
+        });
+        config.data = data;
+        config.xAxis = 'date';
+        config.yAxes = [
+          { name: 'open' },
+          { name: 'high' },
+          { name: 'low' },
+          { name: 'close' },
+          { name: 'volume' }
+        ];
+        config.headers = ['date', 'open', 'high', 'low', 'close', 'volume'];
+      }
+      // Now set up for editing
+      const keys = data.length > 0 ? Object.keys(data[0]) : [];
+      const xAxis = config.xAxis || keys.find(k => !['open','high','low','close','volume'].includes(k)) || keys[0];
+      const yAxes = ['open','high','low','close','volume'].filter(k => keys.includes(k));
+      const headers = [xAxis, ...yAxes];
+      this.editXAxis = xAxis;
+      this.editYAxes = yAxes;
+      this.editingChart.headers = headers;
+    } else {
+      this.editXAxis = config.xAxis;
+      this.editYAxes = config.yAxes ? config.yAxes.map((y: any) => y.name) : [];
+      this.editingChart.headers = config.headers || [];
+    }
+    // --- End auto-transform ---
+    this.editCustomColors = { ...config.customColors };
     this.isEditChartModalVisible = true;
     setTimeout(() => this.updateEditChartPreview(), 100);
   }
@@ -1745,8 +1796,16 @@ export class DahsboardComponent implements AfterViewInit, OnDestroy, OnInit {
       customColors: { ...this.editCustomColors },
       data
     };
+    // Debug logging for candlestick
+    if (this.editChartType === 'candlestick') {
+      console.log('Candlestick Edit Preview Config:', config);
+      console.log('Candlestick Data:', data);
+    }
     this.editChartInstance = echarts.init(chartDom, null, { renderer: 'canvas', useDirtyRect: true });
     const option = this.getOptionFromChartConfig(config);
+    if (this.editChartType === 'candlestick') {
+      console.log('Candlestick ECharts Option:', option);
+    }
     if (option) {
       this.editChartInstance.setOption(option, true);
       setTimeout(() => this.editChartInstance.resize(), 100);

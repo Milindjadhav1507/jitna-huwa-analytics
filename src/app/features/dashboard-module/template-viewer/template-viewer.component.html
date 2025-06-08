@@ -98,7 +98,7 @@
                                 <div class="template-preview-container">
                                     <!-- Charts Preview -->
                                     <div *ngFor="let chart of template.layout?.charts" class="preview-chart mb-3">
-                                        <div class="chart-placeholder bg-light rounded p-3">
+                                        <div class="chart-placeholder bg-light rounded p-3" (click)="openEditChartModal(chart)" style="cursor:pointer;">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <h6 class="mb-0">{{chart.type}}</h6>
                                                 <span class="badge bg-primary">Chart</span>
@@ -188,4 +188,101 @@
             </div>
         </div>
     </main>
+
+    <!-- Edit Chart Modal -->
+    <div *ngIf="isEditChartModalVisible" class="modal fade show compact-chart-modal" tabindex="-1" style="display: block; background: rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 960px; min-width: 320px; margin: auto;">
+            <div class="modal-content" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);">
+                <div class="modal-header bg-light py-3 border-bottom" style="border-radius: 12px 12px 0 0;">
+                    <div class="container-fluid px-2">
+                        <div class="d-flex align-items-center">
+                            <h5 class="modal-title fs-4 mb-0">
+                                <i class="fas fa-edit me-2 text-primary"></i>Edit Chart
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body p-3">
+                    <div class="row g-3 align-items-stretch">
+                        <div class="col-md-4">
+                            <div class="chart-settings card border-0 shadow-sm h-100" style="min-height: 100%;">
+                                <div class="card-body p-3">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Chart Type</label>
+                                        <div class="dropdown">
+                                            <button class="form-select form-select-sm text-start d-flex align-items-center justify-content-between" type="button" id="editChartTypeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <span>
+                                                    <i *ngIf="editChartType" [class]="getChartIcon(editChartType)" class="me-2"></i>
+                                                    {{ editChartType ? editChartType.charAt(0).toUpperCase() + editChartType.slice(1) + ' Chart' : 'Select chart type' }}
+                                                </span>
+                                                <i class="fas fa-chevron-down ms-2"></i>
+                                            </button>
+                                            <ul class="dropdown-menu w-100" aria-labelledby="editChartTypeDropdown">
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='line'; updateEditChartPreview()"><i class="fas fa-chart-line me-2"></i>Line Chart</a></li>
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='bar'; updateEditChartPreview()"><i class="fas fa-chart-bar me-2"></i>Bar Chart</a></li>
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='pie'; updateEditChartPreview()"><i class="fas fa-chart-pie me-2"></i>Pie Chart</a></li>
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='doughnut'; updateEditChartPreview()"><i class="fas fa-circle-notch me-2"></i>Doughnut Chart</a></li>
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='scatter'; updateEditChartPreview()"><i class="fas fa-braille me-2"></i>Scatter Chart</a></li>
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='area'; updateEditChartPreview()"><i class="fas fa-chart-area me-2"></i>Area Chart</a></li>
+                                                <li><a class="dropdown-item d-flex align-items-center" (click)="editChartType='candlestick'; updateEditChartPreview()"><i class="fas fa-chart-column me-2"></i>Candlestick Chart</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">X-Axis</label>
+                                        <select class="form-select form-select-sm" [(ngModel)]="editXAxis" (change)="updateEditChartPreview()">
+                                            <option value="">Select X-axis</option>
+                                            <option *ngFor="let header of editingChart?.headers || []" [value]="header">{{header}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Y-Axis Series</label>
+                                        <div class="y-axis-series border rounded px-2" style="max-height: 120px; overflow-y: auto; scrollbar-width: thin;">
+                                            <div *ngFor="let y of editingChart?.headers || []" class="d-flex align-items-center mb-2">
+                                                <div class="form-check flex-grow-1">
+                                                    <input class="form-check-input" type="checkbox" [checked]="editYAxes.includes(y)" (change)="toggleEditYAxis(y, $event); updateEditChartPreview()">
+                                                    <label class="form-check-label">{{y}}</label>
+                                                </div>
+                                                <input type="color" class="form-control form-control-color ms-2" [value]="editCustomColors[y] || '#3d3185'" (change)="updateEditSeriesColor(y, $event); updateEditChartPreview()" style="width: 36px; height: 28px;">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">Select one or more columns for Y-axis</small>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label fw-bold d-flex align-items-center">Chart Title <span class="text-danger ms-1">*</span></label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" [(ngModel)]="editChartTitle" (input)="updateEditChartPreview()" [class.is-invalid]="!editChartTitle" placeholder="Enter a descriptive title for your chart" required>
+                                            <button class="btn btn-outline-secondary" type="button" (click)="editChartTitle=''; updateEditChartPreview()"><i class="fas fa-times"></i></button>
+                                            <div class="invalid-feedback">Please enter a chart title</div>
+                                        </div>
+                                        <small class="text-muted mt-1 d-block"><i class="fas fa-info-circle me-1"></i>A clear title helps others understand your visualization</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8 d-flex align-items-center justify-content-center" style="min-height: 400px;">
+                            <div class="chart-card w-100" style="background: none; box-shadow: none; display: flex; align-items: center; justify-content: center;">
+                                <div class="chart-container d-flex align-items-center justify-content-center"
+                                    style="background: #fafbfc; border-radius: 18px; width: 100%; max-width: 520px; aspect-ratio: 4/3; height: auto; min-height: 320px; max-height: 420px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); border: 1px solid #eee; padding: 0; overflow: hidden; outline: none;">
+                                    <div #editChartPreview style="width: 100%; height: 100%; max-width: 100%; max-height: 100%; min-width: 0; min-height: 0; object-fit: contain; background: #fafbfc; border-radius: 18px; outline: none; border: none; box-shadow: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2 border-top" style="border-radius: 0 0 12px 12px;">
+                    <div class="container-fluid px-2">
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-light btn-sm px-3" (click)="closeEditChartModal()">
+                                <i class="fas fa-times me-2"></i>Close
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm px-3" (click)="saveEditedChart()" [disabled]="!editChartTitle || !editChartType || !editXAxis || editYAxes.length === 0">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
