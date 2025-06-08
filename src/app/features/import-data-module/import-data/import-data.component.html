@@ -216,7 +216,12 @@
                 </tbody>
               </table>
               <div class="text-center mb-2" *ngIf="sheetData[sheet] && sheetData[sheet].data && sheetData[sheet].data.length > 4">
-                <button class="btn btn-link p-0" (click)="toggleSheetExpand(sheet)">
+                <button class="btn btn-link p-0" (click)="toggleSheetExpand(sheet)" style="color: black !important;
+                background-color: white !important;
+                border: 1px solid white !important;
+                font-style: italic;
+                font-weight: 700;
+                font-size: medium;">
                   {{ expandedSheets[sheet] ? 'Show less' : 'Show more data' }}
                 </button>
               </div>
